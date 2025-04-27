@@ -4,6 +4,7 @@ export interface Event {
   time?: string;
   endTime?: string;
   team: string;
+  title?: string;
   status: 'reserved' | 'in-use' | 'completed';
   participants?: string;
   target?: string;
@@ -75,6 +76,7 @@ export const events: Event[] = [
     time: '10:00',
     endTime: '12:00',
     team: '第一研究班',
+    title: '植物の葉の分析',
     status: 'reserved',
   },
   {
@@ -83,6 +85,7 @@ export const events: Event[] = [
     time: '14:30',
     endTime: '16:30',
     team: '第二研究班',
+    title: '土壌サンプル分析',
     status: 'in-use',
   },
   {
@@ -91,6 +94,7 @@ export const events: Event[] = [
     time: '09:15',
     endTime: '11:45',
     team: '第三研究班',
+    title: '鉱物サンプル分析',
     status: 'completed',
     participants: '田中、佐藤、鈴木',
     target: '鉱物サンプルA-123',
@@ -103,6 +107,7 @@ export const events: Event[] = [
     time: '13:00',
     endTime: '15:00',
     team: '環境分析チーム',
+    title: '水質サンプル分析',
     status: 'reserved',
   },
   {
@@ -111,6 +116,7 @@ export const events: Event[] = [
     time: '15:45',
     endTime: '17:30',
     team: '材料研究班',
+    title: '新素材分析',
     status: 'reserved',
   }
 ];

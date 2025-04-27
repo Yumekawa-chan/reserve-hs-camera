@@ -42,24 +42,24 @@ export function getStatusText(status: string): string {
 }
 
 export function exportToCsv(events: Event[]): void {
+  const completedEvents = events.filter(event => event.status === 'completed');
+  
   const headers = [
-    'ID',
     '日付',
+    '撮影時間',
     '班名',
     'タイトル',
-    'ステータス',
     '参加者',
     '撮影対象',
     '撮影枚数',
     '備考'
   ];
 
-  const csvData = events.map(event => [
-    event.id,
+  const csvData = completedEvents.map(event => [
     event.date,
+    event.time && event.endTime ? `${event.time}～${event.endTime}` : '',
     event.team,
     event.title,
-    getStatusText(event.status),
     event.participants || '',
     event.target || '',
     event.shots?.toString() || '',
