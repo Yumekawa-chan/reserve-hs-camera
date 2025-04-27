@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDate } from '@/lib/utils';
-import { Event, updateEvent } from '@/lib/mockData';
+import { Event, updateEvent } from '@/lib/firebaseData';
 import { StatusBadge } from './StatusBadge';
 import { Button } from './Button';
 import { ReportModal } from './ReportModal';
@@ -14,14 +14,27 @@ interface EventDetailsProps {
 
 export function EventDetails({ event, onEventUpdated, onClose }: EventDetailsProps) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
-  const startUsing = () => {
-    const updatedEvent = {
-      ...event,
-      status: 'in-use' as const,
-    };
-    updateEvent(updatedEvent);
-    onEventUpdated?.(updatedEvent);
+  const startUsing = async () => {
+    try {
+      setIsUpdating(true);
+      const updatedEvent = {
+        ...event,
+        status: 'in-use' as const,
+      };
+      const result = await updateEvent(updatedEvent);
+      if (result) {
+        onEventUpdated?.(updatedEvent);
+      } else {
+        throw new Error('イベントの更新に失敗しました');
+      }
+    } catch (error) {
+      console.error('Error updating event status:', error);
+      alert('イベントの状態を更新できませんでした。管理者に連絡してください。');
+    } finally {
+      setIsUpdating(false);
+    }
   };
   
   const handleReportComplete = () => {
@@ -118,9 +131,10 @@ export function EventDetails({ event, onEventUpdated, onClose }: EventDetailsPro
             variant="primary" 
             onClick={startUsing}
             className="flex items-center"
+            disabled={isUpdating}
           >
             <FiPlay className="mr-1" />
-            使用開始
+            {isUpdating ? '処理中...' : '使用開始'}
           </Button>
         )}
         

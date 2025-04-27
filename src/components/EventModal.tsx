@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
-import { Event, Team, addEvent, generateId, getTeams, updateEvent } from '@/lib/mockData';
+import { Event, Team, addEvent, generateId, getTeams, updateEvent } from '@/lib/firebaseData';
 import { FiClock, FiUsers, FiCalendar, FiArrowRight } from 'react-icons/fi';
 
 interface EventModalProps {
@@ -28,7 +28,11 @@ export function EventModal({
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setTeams(getTeams());
+    const fetchTeams = async () => {
+      const teamsData = await getTeams();
+      setTeams(teamsData);
+    };
+    fetchTeams();
   }, []);
 
   const handleBackdropClick = (e: React.MouseEvent) => {

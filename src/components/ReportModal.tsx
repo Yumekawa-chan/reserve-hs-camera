@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
-import { Event, Team, TeamMember, getTeamByName, updateEvent } from '@/lib/mockData';
+import { Event, Team, TeamMember, getTeamByName, updateEvent } from '@/lib/firebaseData';
 import { FiUser, FiUsers, FiTarget, FiCamera, FiFileText, FiCheckCircle } from 'react-icons/fi';
 
 interface ReportModalProps {
@@ -26,8 +26,11 @@ export function ReportModal({
 
   useEffect(() => {
     if (event.team) {
-      const team = getTeamByName(event.team);
-      setTeamData(team);
+      const fetchTeam = async () => {
+        const team = await getTeamByName(event.team);
+        setTeamData(team || undefined);
+      };
+      fetchTeam();
     }
   }, [event.team]);
 
@@ -38,30 +41,38 @@ export function ReportModal({
   };
 
   const handleAddMember = (member: TeamMember) => {
-    const currentParticipants = participants.split('、').filter(p => p.trim() !== '');
+    const currentParticipants = participants.split('、').filter((p: string) => p.trim() !== '');
     
-    // メンバーがすでに含まれているかチェック
     if (!currentParticipants.includes(member.name)) {
       const newParticipants = [...currentParticipants, member.name];
       setParticipants(newParticipants.join('、'));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const updatedEvent = {
-      ...event,
-      participants,
-      target,
-      shots: shots ? parseInt(shots, 10) : undefined,
-      notes,
-      status: 'completed' as const,
-    };
-    
-    updateEvent(updatedEvent);
-    onEventUpdated?.(updatedEvent);
-    onClose();
+    try {
+      const updatedEvent = {
+        ...event,
+        participants,
+        target,
+        shots: shots ? parseInt(shots, 10) : undefined,
+        notes,
+        status: 'completed' as const,
+      };
+      
+      const result = await updateEvent(updatedEvent);
+      if (result) {
+        onEventUpdated?.(updatedEvent);
+        onClose();
+      } else {
+        throw new Error('イベントの更新に失敗しました');
+      }
+    } catch (error) {
+      console.error('Error completing event:', error);
+      alert('利用報告の送信中にエラーが発生しました。管理者に連絡してください。');
+    }
   };
 
   if (!isOpen) return null;
@@ -99,7 +110,7 @@ export function ReportModal({
               <div className="mt-2">
                 <p className="text-sm text-gray-500 mb-1">班メンバー：</p>
                 <div className="flex flex-wrap gap-1">
-                  {teamData.members.map(member => (
+                  {teamData.members.map((member: TeamMember) => (
                     <button
                       key={member.id}
                       type="button"

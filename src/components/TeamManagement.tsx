@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Team, TeamMember, addTeam, deleteTeam, generateId, getTeams, updateTeam } from '@/lib/mockData';
+import { Team, TeamMember, addTeam, deleteTeam, generateId, getTeams, updateTeam } from '@/lib/firebaseData';
 import { Button } from './Button';
-import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings } from 'react-icons/fi';
+import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings, FiLoader } from 'react-icons/fi';
 
 const COLOR_PALETTE = [
   { name: 'インディゴ', bg: '#4F46E5', border: '#4338CA' },
@@ -21,19 +21,36 @@ interface TeamManagementProps {
 
 export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [newMemberName, setNewMemberName] = useState('');
   const [editingTeam, setEditingTeam] = useState(false);
   const [selectedColor, setSelectedColor] = useState(COLOR_PALETTE[0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setTeams(getTeams());
+      fetchTeams();
     }
   }, [isOpen]);
+
+  const fetchTeams = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const fetchedTeams = await getTeams();
+      setTeams(fetchedTeams);
+    } catch (err) {
+      console.error('Error fetching teams:', err);
+      setError('チームデータの読み込み中にエラーが発生しました。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -44,7 +61,6 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const handleSelectTeam = (team: Team) => {
     setSelectedTeam(team);
     setEditingTeam(false);
-    // チームの色を選択状態に設定
     if (team.color) {
       const matchingColor = COLOR_PALETTE.find(
         color => color.bg === team.color?.bg && color.border === team.color?.border
@@ -55,20 +71,32 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
     }
   };
 
-  const handleAddTeam = () => {
-    if (!newTeamName.trim()) return;
+  const handleAddTeam = async () => {
+    if (!newTeamName.trim() || isSubmitting) return;
     
-    const newTeam: Team = {
-      id: generateId(),
-      name: newTeamName,
-      members: [],
-      color: selectedColor
-    };
-    
-    addTeam(newTeam);
-    setTeams(getTeams());
-    setNewTeamName('');
-    setSelectedTeam(newTeam);
+    setIsSubmitting(true);
+    try {
+      const newTeam: Omit<Team, 'id'> = {
+        name: newTeamName,
+        members: [],
+        color: selectedColor
+      };
+      
+      const addedTeam = await addTeam(newTeam);
+      if (addedTeam) {
+        const updatedTeams = await getTeams();
+        setTeams(updatedTeams);
+        setNewTeamName('');
+        setSelectedTeam(addedTeam);
+      } else {
+        throw new Error('チームの追加に失敗しました');
+      }
+    } catch (err) {
+      console.error('Error adding team:', err);
+      alert('チームの追加中にエラーが発生しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEditTeam = () => {
@@ -86,65 +114,152 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
     }
   };
 
-  const handleUpdateTeam = () => {
-    if (!selectedTeam || !newTeamName.trim()) return;
+  const handleUpdateTeam = async () => {
+    if (!selectedTeam || !newTeamName.trim() || isSubmitting) return;
     
-    const updatedTeam = {
-      ...selectedTeam,
-      name: newTeamName,
-      color: selectedColor
-    };
-    
-    updateTeam(updatedTeam);
-    setTeams(getTeams());
-    setSelectedTeam(updatedTeam);
-    setEditingTeam(false);
-    setNewTeamName('');
-  };
-
-  const handleDeleteTeam = () => {
-    if (!selectedTeam) return;
-    
-    if (window.confirm(`「${selectedTeam.name}」を削除してもよろしいですか？`)) {
-      deleteTeam(selectedTeam.id);
-      setTeams(getTeams());
-      setSelectedTeam(null);
+    setIsSubmitting(true);
+    try {
+      const updatedTeam = {
+        ...selectedTeam,
+        name: newTeamName,
+        color: selectedColor
+      };
+      
+      const result = await updateTeam(updatedTeam);
+      if (result) {
+        const updatedTeams = await getTeams();
+        setTeams(updatedTeams);
+        setSelectedTeam(result);
+        setEditingTeam(false);
+        setNewTeamName('');
+      } else {
+        throw new Error('チームの更新に失敗しました');
+      }
+    } catch (err) {
+      console.error('Error updating team:', err);
+      alert('チームの更新中にエラーが発生しました。');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleAddMember = () => {
-    if (!selectedTeam || !newMemberName.trim()) return;
+  const handleDeleteTeam = async () => {
+    if (!selectedTeam || isSubmitting) return;
     
-    const newMember: TeamMember = {
-      id: generateId(),
-      name: newMemberName
-    };
-    
-    const updatedTeam = {
-      ...selectedTeam,
-      members: [...selectedTeam.members, newMember]
-    };
-    
-    updateTeam(updatedTeam);
-    setTeams(getTeams());
-    setSelectedTeam(updatedTeam);
-    setNewMemberName('');
+    if (window.confirm(`「${selectedTeam.name}」を削除してもよろしいですか？`)) {
+      setIsSubmitting(true);
+      try {
+        const success = await deleteTeam(selectedTeam.id);
+        if (success) {
+          const updatedTeams = await getTeams();
+          setTeams(updatedTeams);
+          setSelectedTeam(null);
+        } else {
+          throw new Error('チームの削除に失敗しました');
+        }
+      } catch (err) {
+        console.error('Error deleting team:', err);
+        alert('チームの削除中にエラーが発生しました。');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
 
-  const handleDeleteMember = (memberId: string) => {
-    if (!selectedTeam) return;
+  const handleAddMember = async () => {
+    if (!selectedTeam || !newMemberName.trim() || isSubmitting) return;
     
-    const updatedTeam = {
-      ...selectedTeam,
-      members: selectedTeam.members.filter(m => m.id !== memberId)
-    };
+    setIsSubmitting(true);
+    try {
+      const newMember: TeamMember = {
+        id: generateId(),
+        name: newMemberName
+      };
+      
+      const updatedTeam = {
+        ...selectedTeam,
+        members: [...selectedTeam.members, newMember]
+      };
+      
+      const result = await updateTeam(updatedTeam);
+      if (result) {
+        const updatedTeams = await getTeams();
+        setTeams(updatedTeams);
+        
+        const freshSelectedTeam = updatedTeams.find(team => team.id === selectedTeam.id);
+        if (freshSelectedTeam) {
+          setSelectedTeam(freshSelectedTeam);
+        }
+        
+        setNewMemberName('');
+      } else {
+        throw new Error('メンバーの追加に失敗しました');
+      }
+    } catch (err) {
+      console.error('Error adding member:', err);
+      alert('メンバーの追加中にエラーが発生しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteMember = async (memberId: string) => {
+    if (!selectedTeam || isSubmitting) return;
     
-    updateTeam(updatedTeam);
-    setTeams(getTeams());
-    setSelectedTeam(updatedTeam);
+    setIsSubmitting(true);
+    try {
+      const updatedTeam = {
+        ...selectedTeam,
+        members: selectedTeam.members.filter(m => m.id !== memberId)
+      };
+      
+      const result = await updateTeam(updatedTeam);
+      if (result) {
+        const updatedTeams = await getTeams();
+        setTeams(updatedTeams);
+        
+        const freshSelectedTeam = updatedTeams.find(team => team.id === selectedTeam.id);
+        if (freshSelectedTeam) {
+          setSelectedTeam(freshSelectedTeam);
+        }
+      } else {
+        throw new Error('メンバーの削除に失敗しました');
+      }
+    } catch (err) {
+      console.error('Error deleting member:', err);
+      alert('メンバーの削除中にエラーが発生しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">班データを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
+          <h2 className="text-xl font-bold mb-4 text-red-600">エラーが発生しました</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <div className="flex justify-end space-x-3">
+            <Button onClick={() => fetchTeams()}>再試行</Button>
+            <Button variant="outline" onClick={onClose}>閉じる</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -170,6 +285,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   onChange={(e) => setNewTeamName(e.target.value)}
                   placeholder="新しい班名"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
                 
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -180,6 +296,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                       style={{ backgroundColor: color.bg }}
                       onClick={() => setSelectedColor(color)}
                       title={color.name}
+                      disabled={isSubmitting}
                     />
                   ))}
                 </div>
@@ -187,9 +304,19 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                 <Button 
                   onClick={handleAddTeam} 
                   className="flex items-center justify-center mt-2"
+                  disabled={isSubmitting || !newTeamName.trim()}
                 >
-                  <FiPlus className="mr-1" />
-                  新しい班を追加
+                  {isSubmitting ? (
+                    <>
+                      <FiLoader className="mr-1 animate-spin" />
+                      処理中...
+                    </>
+                  ) : (
+                    <>
+                      <FiPlus className="mr-1" />
+                      新しい班を追加
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -229,6 +356,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                         value={newTeamName}
                         onChange={(e) => setNewTeamName(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        disabled={isSubmitting}
                       />
                       
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -243,6 +371,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                             style={{ backgroundColor: color.bg }}
                             onClick={() => setSelectedColor(color)}
                             title={color.name}
+                            disabled={isSubmitting}
                           />
                         ))}
                       </div>
@@ -253,9 +382,19 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           size="sm" 
                           onClick={handleUpdateTeam}
                           className="flex items-center"
+                          disabled={isSubmitting || !newTeamName.trim()}
                         >
-                          <FiCheck className="mr-1" />
-                          保存
+                          {isSubmitting ? (
+                            <>
+                              <FiLoader className="mr-1 animate-spin" />
+                              処理中...
+                            </>
+                          ) : (
+                            <>
+                              <FiCheck className="mr-1" />
+                              保存
+                            </>
+                          )}
                         </Button>
                         <Button 
                           variant="outline" 
@@ -265,6 +404,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                             setNewTeamName('');
                           }}
                           className="flex items-center"
+                          disabled={isSubmitting}
                         >
                           <FiX className="mr-1" />
                           キャンセル
@@ -286,6 +426,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           variant="secondary"
                           onClick={handleEditTeam}
                           className="flex items-center"
+                          disabled={isSubmitting}
                         >
                           <FiEdit className="mr-1" />
                           編集
@@ -295,9 +436,16 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           variant="danger"
                           onClick={handleDeleteTeam}
                           className="flex items-center"
+                          disabled={isSubmitting}
                         >
-                          <FiTrash2 className="mr-1" />
-                          削除
+                          {isSubmitting ? (
+                            <FiLoader className="animate-spin" />
+                          ) : (
+                            <>
+                              <FiTrash2 className="mr-1" />
+                              削除
+                            </>
+                          )}
                         </Button>
                       </div>
                     </>
@@ -312,13 +460,19 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                       onChange={(e) => setNewMemberName(e.target.value)}
                       placeholder="新しいメンバー名"
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isSubmitting}
                     />
                     <Button 
                       onClick={handleAddMember} 
                       size="sm"
                       className="flex items-center"
+                      disabled={isSubmitting || !newMemberName.trim()}
                     >
-                      <FiUserPlus />
+                      {isSubmitting ? (
+                        <FiLoader className="animate-spin" />
+                      ) : (
+                        <FiUserPlus />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -346,8 +500,13 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                             variant="danger"
                             onClick={() => handleDeleteMember(member.id)}
                             className="flex items-center"
+                            disabled={isSubmitting}
                           >
-                            <FiUserX />
+                            {isSubmitting ? (
+                              <FiLoader className="animate-spin" />
+                            ) : (
+                              <FiUserX />
+                            )}
                           </Button>
                         </li>
                       ))}
@@ -368,6 +527,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
           <Button 
             onClick={onClose}
             className="flex items-center"
+            disabled={isSubmitting}
           >
             <FiCheck className="mr-1" />
             完了

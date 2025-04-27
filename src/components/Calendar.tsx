@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getEvents, Event } from '@/lib/mockData';
+import { getEvents, Event } from '@/lib/firebaseData';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -11,15 +11,26 @@ import { getTeamColor } from '@/lib/utils';
 
 export function Calendar() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
-    const fetchEvents = () => {
-      const allEvents = getEvents();
-      setEvents(allEvents);
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const allEvents = await getEvents();
+        setEvents(allEvents);
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError('イベントデータの読み込み中にエラーが発生しました。');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchEvents();
@@ -36,8 +47,13 @@ export function Calendar() {
     setIsDetailsOpen(true);
   };
 
-  const handleEventChange = () => {
-    setEvents(getEvents());
+  const handleEventChange = async () => {
+    try {
+      const allEvents = await getEvents();
+      setEvents(allEvents);
+    } catch (err) {
+      console.error('Error refreshing events:', err);
+    }
   };
 
   const formatEventsForCalendar = (events: Event[]) => {
@@ -46,9 +62,8 @@ export function Calendar() {
       const textColor = '#FFFFFF';
 
       if (event.status === 'in-use') {
-        // 使用中は常に赤色
-        backgroundColor = '#EF4444'; // red-500
-        borderColor = '#DC2626'; // red-600
+        backgroundColor = '#EF4444';
+        borderColor = '#DC2626';
       } else {
         const teamColors = getTeamColor(event.team);
         backgroundColor = teamColors.bg;
@@ -68,6 +83,29 @@ export function Calendar() {
       };
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">カレンダーデータを読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center bg-red-50 rounded-xl border border-red-100">
+        <p className="text-red-600 mb-2">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+        >
+          再読み込み
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="calendar-wrapper">

@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Event, getTeamByName } from './mockData';
+import { Event } from './firebaseData';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,38 +41,48 @@ export function getStatusText(status: string): string {
   }
 }
 
+const teamColorCache: Record<string, { bg: string, border: string }> = {};
+
 export function getTeamColor(teamName: string): { bg: string, border: string } {
-  // チームデータから該当するチームを探す
-  const team = getTeamByName(teamName);
-  
-  // チームが見つかり、カラー設定がある場合はそれを返す
-  if (team && team.color) {
-    return team.color;
+  if (teamColorCache[teamName]) {
+    return teamColorCache[teamName];
   }
   
-  // 以下は既存のフォールバックロジック
+  let color: { bg: string, border: string };
+  
   switch (teamName) {
     case '第一研究班':
-      return { bg: '#4F46E5', border: '#4338CA' }; // インディゴ (indigo-600, indigo-700)
+      color = { bg: '#4F46E5', border: '#4338CA' }; // インディゴ
+      break;
     case '第二研究班':
-      return { bg: '#0EA5E9', border: '#0284C7' }; // スカイブルー (sky-500, sky-600)
+      color = { bg: '#0EA5E9', border: '#0284C7' }; // スカイブルー
+      break;
     case '第三研究班':
-      return { bg: '#10B981', border: '#059669' }; // エメラルド (emerald-500, emerald-600)
+      color = { bg: '#10B981', border: '#059669' }; // エメラルド
+      break;
     case '環境分析チーム':
-      return { bg: '#8B5CF6', border: '#7C3AED' }; // バイオレット (violet-500, violet-600)
+      color = { bg: '#8B5CF6', border: '#7C3AED' }; // バイオレット
+      break;
     case '材料研究班':
-      return { bg: '#F59E0B', border: '#D97706' }; // アンバー (amber-500, amber-600)
+      color = { bg: '#F59E0B', border: '#D97706' }; // アンバー
+      break;
     default:
-      // ハッシュ値に基づいて色を生成（赤色を避ける）
       const hash = teamName.split('').reduce((acc, char) => {
         return char.charCodeAt(0) + ((acc << 5) - acc);
       }, 0);
-      const hue = Math.abs(hash % 280); // 0-280の範囲（赤色の範囲を避ける）
-      return { 
+      const hue = Math.abs(hash % 280);
+      color = { 
         bg: `hsl(${hue}, 70%, 60%)`, 
         border: `hsl(${hue}, 70%, 50%)` 
       };
   }
+  
+  teamColorCache[teamName] = color;
+  return color;
+}
+
+export function updateTeamColorCache(teamName: string, color: { bg: string, border: string }): void {
+  teamColorCache[teamName] = color;
 }
 
 export function exportToCsv(events: Event[]): void {

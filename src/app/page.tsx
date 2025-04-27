@@ -6,21 +6,26 @@ import { Calendar } from '@/components/Calendar';
 import { TeamManagement } from '@/components/TeamManagement';
 import { Header } from '@/components/Header';
 import { exportToCsv } from '@/lib/utils';
-import { getEvents } from '@/lib/mockData';
+import { getEvents } from '@/lib/firebaseData';
 import { FiDownload, FiSettings, FiCheck, FiCalendar } from 'react-icons/fi';
 
 export default function Home() {
   const [isExportSuccessful, setIsExportSuccessful] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     try {
-      const events = getEvents();
+      setIsExporting(true);
+      const events = await getEvents();
       exportToCsv(events);
       setIsExportSuccessful(true);
       setTimeout(() => setIsExportSuccessful(false), 3000);
     } catch (error) {
       console.error('CSVエクスポートエラー:', error);
+      alert('CSVエクスポート中にエラーが発生しました。');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -34,9 +39,10 @@ export default function Home() {
               onClick={handleExportCSV}
               className="flex items-center"
               variant="primary"
+              disabled={isExporting}
             >
               <FiDownload className="mr-1" />
-              CSV出力
+              {isExporting ? 'エクスポート中...' : 'CSV出力'}
             </Button>
             <Button 
               variant="outline"
