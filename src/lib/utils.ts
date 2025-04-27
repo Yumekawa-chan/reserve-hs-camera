@@ -109,29 +109,29 @@ export function updateTeamColorCache(teamName: string, color: { bg: string, bord
   teamColorCache[teamName] = color;
 }
 
-export function exportToCsv(events: Event[]): void {
-  const completedEvents = events.filter(event => event.status === 'completed');
-  
+export const exportToCsv = (events: Event[], fileName: string) => {
   const headers = [
     '日付',
-    '撮影時間',
-    '班名',
-    'タイトル',
+    '時間',
+    '終了時間',
+    'チーム',
+    'ステータス',
     '参加者',
     '撮影対象',
-    '撮影枚数',
-    '備考'
+    'カット数',
+    'メモ',
   ];
 
-  const csvData = completedEvents.map(event => [
-    event.date,
-    event.time && event.endTime ? `${event.time}～${event.endTime}` : '',
-    event.team,
-    event.title,
+  const csvData = events.map((event) => [
+    event.date || '',
+    event.time || '',
+    event.endTime || '',
+    event.team || '',
+    getStatusText(event.status),
     event.participants || '',
     event.target || '',
     event.shots?.toString() || '',
-    event.notes || ''
+    event.notes || '',
   ]);
 
   const csvContent = [
@@ -144,7 +144,7 @@ export function exportToCsv(events: Event[]): void {
   const link = document.createElement('a');
   
   link.setAttribute('href', url);
-  link.setAttribute('download', `カメラ利用記録_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute('download', fileName);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);

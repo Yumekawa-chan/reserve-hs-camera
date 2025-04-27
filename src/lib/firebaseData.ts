@@ -20,7 +20,6 @@ export interface Event {
   time?: string;
   endTime?: string;
   team: string;
-  title?: string;
   status: 'reserved' | 'in-use' | 'completed';
   participants?: string;
   target?: string;
