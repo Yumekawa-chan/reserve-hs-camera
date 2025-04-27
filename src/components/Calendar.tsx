@@ -7,7 +7,7 @@ import jaLocale from '@fullcalendar/core/locales/ja';
 import { EventClickArg } from '@fullcalendar/core';
 import { EventModal } from './EventModal';
 import { EventDetails } from './EventDetails';
-import { getTeamColor, updateTeamColorCache, getTeamColorAsync } from '@/lib/utils';
+import { getTeamColor, updateTeamColorCache } from '@/lib/utils';
 
 export function Calendar() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -28,7 +28,8 @@ export function Calendar() {
           if (team.color) {
             updateTeamColorCache(team.name, team.color);
           } else {
-            await getTeamColorAsync(team.name);
+            const defaultColor = getTeamColor(team.name);
+            updateTeamColorCache(team.name, defaultColor);
           }
         }
         

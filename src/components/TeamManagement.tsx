@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Team, TeamMember, addTeam, deleteTeam, generateId, getTeams, updateTeam } from '@/lib/firebaseData';
 import { Button } from './Button';
+import { updateTeamColorCache } from '@/lib/utils';
 import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings, FiLoader } from 'react-icons/fi';
 
 const COLOR_PALETTE = [
@@ -84,6 +85,8 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
       
       const addedTeam = await addTeam(newTeam);
       if (addedTeam) {
+        updateTeamColorCache(addedTeam.name, selectedColor);
+        
         const updatedTeams = await getTeams();
         setTeams(updatedTeams);
         setNewTeamName('');
@@ -124,6 +127,11 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
         name: newTeamName,
         color: selectedColor
       };
+      
+      if (selectedTeam.name !== newTeamName) {
+        updateTeamColorCache(selectedTeam.name, selectedColor);
+      }
+      updateTeamColorCache(newTeamName, selectedColor);
       
       const result = await updateTeam(updatedTeam);
       if (result) {

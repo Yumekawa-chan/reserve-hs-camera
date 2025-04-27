@@ -109,42 +109,44 @@ export function updateTeamColorCache(teamName: string, color: { bg: string, bord
   teamColorCache[teamName] = color;
 }
 
-export const exportToCsv = (events: Event[], fileName: string) => {
+export const exportToCsv = (events: Event[]) => {
+  // 完了済みのイベントのみをフィルタリング
+  const completedEvents = events.filter(event => event.status === 'completed');
+  
   const headers = [
     '日付',
     '時間',
-    '終了時間',
-    'チーム',
-    'ステータス',
+    '班名',
     '参加者',
     '撮影対象',
-    'カット数',
-    'メモ',
+    '撮影枚数',
+    '備考'
   ];
 
-  const csvData = events.map((event) => [
-    event.date || '',
-    event.time || '',
-    event.endTime || '',
+  const rows = completedEvents.map(event => [
+    formatDate(event.date),
+    `${event.time || ''}${event.endTime ? ` - ${event.endTime}` : ''}`,
     event.team || '',
-    getStatusText(event.status),
     event.participants || '',
     event.target || '',
     event.shots?.toString() || '',
-    event.notes || '',
+    event.notes || ''
   ]);
 
   const csvContent = [
     headers.join(','),
-    ...csvData.map(row => row.join(','))
+    ...rows.map(row => row.join(','))
   ].join('\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  
   link.setAttribute('href', url);
-  link.setAttribute('download', fileName);
+  link.setAttribute('download', `hyper-history-${dateStr}.csv`);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);
