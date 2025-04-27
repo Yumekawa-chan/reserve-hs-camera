@@ -60,6 +60,20 @@ export function Calendar() {
     }
   };
 
+  const handleEventDeleted = async (eventId: string) => {
+    try {
+      const allEvents = await getEvents();
+      setEvents(allEvents);
+      
+      if (selectedEvent && selectedEvent.id === eventId) {
+        setSelectedEvent(null);
+        setIsDetailsOpen(false);
+      }
+    } catch (err) {
+      console.error('Error refreshing events after deletion:', err);
+    }
+  };
+
   const formatEventsForCalendar = (events: Event[]) => {
     return events.map(event => {
       let backgroundColor, borderColor;
@@ -206,6 +220,7 @@ export function Calendar() {
                 handleEventChange(updatedEvent);
                 setIsDetailsOpen(false);
               }}
+              onEventDeleted={handleEventDeleted}
             />
           </div>
         </div>
