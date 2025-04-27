@@ -7,6 +7,7 @@ import jaLocale from '@fullcalendar/core/locales/ja';
 import { EventClickArg } from '@fullcalendar/core';
 import { EventModal } from './EventModal';
 import { EventDetails } from './EventDetails';
+import { getTeamColor } from '@/lib/utils';
 
 export function Calendar() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -41,16 +42,17 @@ export function Calendar() {
 
   const formatEventsForCalendar = (events: Event[]) => {
     return events.map(event => {
-      let backgroundColor = '#EC4899'; // pink-500 for reserved
-      let borderColor = '#DB2777'; // pink-600
+      let backgroundColor, borderColor;
       const textColor = '#FFFFFF';
 
       if (event.status === 'in-use') {
-        backgroundColor = '#F59E0B'; // amber-500 for in-use
-        borderColor = '#D97706'; // amber-600
-      } else if (event.status === 'completed') {
-        backgroundColor = '#10B981'; // emerald-500 for completed
-        borderColor = '#059669'; // emerald-600
+        // 使用中は常に赤色
+        backgroundColor = '#EF4444'; // red-500
+        borderColor = '#DC2626'; // red-600
+      } else {
+        const teamColors = getTeamColor(event.team);
+        backgroundColor = teamColors.bg;
+        borderColor = teamColors.border;
       }
 
       const timeDisplay = event.time ? 

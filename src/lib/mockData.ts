@@ -21,6 +21,10 @@ export interface Team {
   id: string;
   name: string;
   members: TeamMember[];
+  color?: {
+    bg: string;
+    border: string;
+  };
 }
 
 export const teams: Team[] = [
@@ -31,7 +35,8 @@ export const teams: Team[] = [
       { id: '101', name: '佐藤 太郎' },
       { id: '102', name: '田中 花子' },
       { id: '103', name: '鈴木 一郎' }
-    ]
+    ],
+    color: { bg: '#4F46E5', border: '#4338CA' } // インディゴ
   },
   {
     id: '2',
@@ -39,7 +44,8 @@ export const teams: Team[] = [
     members: [
       { id: '201', name: '高橋 次郎' },
       { id: '202', name: '伊藤 真理' }
-    ]
+    ],
+    color: { bg: '#0EA5E9', border: '#0284C7' } // スカイブルー
   },
   {
     id: '3',
@@ -48,7 +54,8 @@ export const teams: Team[] = [
       { id: '301', name: '渡辺 健太' },
       { id: '302', name: '佐々木 美咲' },
       { id: '303', name: '小林 隆' }
-    ]
+    ],
+    color: { bg: '#10B981', border: '#059669' } // エメラルド
   },
   {
     id: '4',
@@ -56,7 +63,8 @@ export const teams: Team[] = [
     members: [
       { id: '401', name: '加藤 誠' },
       { id: '402', name: '山本 恵' }
-    ]
+    ],
+    color: { bg: '#8B5CF6', border: '#7C3AED' } // バイオレット
   },
   {
     id: '5',
@@ -65,7 +73,8 @@ export const teams: Team[] = [
       { id: '501', name: '中村 大輔' },
       { id: '502', name: '斎藤 裕子' },
       { id: '503', name: '松本 拓也' }
-    ]
+    ],
+    color: { bg: '#F59E0B', border: '#D97706' } // アンバー
   }
 ];
 

@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Team, TeamMember, addTeam, deleteTeam, generateId, getTeams, updateTeam } from '@/lib/mockData';
 import { Button } from './Button';
-import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX } from 'react-icons/fi';
+import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings } from 'react-icons/fi';
+
+const COLOR_PALETTE = [
+  { name: 'インディゴ', bg: '#4F46E5', border: '#4338CA' },
+  { name: 'エメラルド', bg: '#10B981', border: '#059669' },
+  { name: 'バイオレット', bg: '#8B5CF6', border: '#7C3AED' },
+  { name: 'アンバー', bg: '#F59E0B', border: '#D97706' },
+  { name: 'フクシャ', bg: '#D946EF', border: '#C026D3' },
+  { name: 'ティール', bg: '#14B8A6', border: '#0D9488' },
+  { name: 'ライム', bg: '#84CC16', border: '#65A30D' },
+  { name: 'ピンク', bg: '#EC4899', border: '#DB2777' },
+];
 
 interface TeamManagementProps {
   isOpen: boolean;
@@ -14,6 +25,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const [newTeamName, setNewTeamName] = useState('');
   const [newMemberName, setNewMemberName] = useState('');
   const [editingTeam, setEditingTeam] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(COLOR_PALETTE[0]);
   
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +44,15 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const handleSelectTeam = (team: Team) => {
     setSelectedTeam(team);
     setEditingTeam(false);
+    // チームの色を選択状態に設定
+    if (team.color) {
+      const matchingColor = COLOR_PALETTE.find(
+        color => color.bg === team.color?.bg && color.border === team.color?.border
+      );
+      if (matchingColor) {
+        setSelectedColor(matchingColor);
+      }
+    }
   };
 
   const handleAddTeam = () => {
@@ -40,7 +61,8 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
     const newTeam: Team = {
       id: generateId(),
       name: newTeamName,
-      members: []
+      members: [],
+      color: selectedColor
     };
     
     addTeam(newTeam);
@@ -53,6 +75,14 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
     setEditingTeam(true);
     if (selectedTeam) {
       setNewTeamName(selectedTeam.name);
+      if (selectedTeam.color) {
+        const matchingColor = COLOR_PALETTE.find(
+          color => color.bg === selectedTeam.color?.bg && color.border === selectedTeam.color?.border
+        );
+        if (matchingColor) {
+          setSelectedColor(matchingColor);
+        }
+      }
     }
   };
 
@@ -61,7 +91,8 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
     
     const updatedTeam = {
       ...selectedTeam,
-      name: newTeamName
+      name: newTeamName,
+      color: selectedColor
     };
     
     updateTeam(updatedTeam);
@@ -132,20 +163,33 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
         <div className="flex flex-1 overflow-hidden">
           <div className="w-1/3 border-r pr-4 overflow-y-auto">
             <div className="mb-4">
-              <div className="flex space-x-2">
+              <div className="flex flex-col space-y-2">
                 <input
                   type="text"
                   value={newTeamName}
                   onChange={(e) => setNewTeamName(e.target.value)}
                   placeholder="新しい班名"
-                  className="flex-1 px-1 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {COLOR_PALETTE.map((color, index) => (
+                    <button
+                      key={index}
+                      className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`}
+                      style={{ backgroundColor: color.bg }}
+                      onClick={() => setSelectedColor(color)}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+                
                 <Button 
                   onClick={handleAddTeam} 
-                  size="sm"
-                  className="flex items-center"
+                  className="flex items-center justify-center mt-2"
                 >
-                  <FiPlus />
+                  <FiPlus className="mr-1" />
+                  新しい班を追加
                 </Button>
               </div>
             </div>
@@ -160,7 +204,10 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   onClick={() => handleSelectTeam(team)}
                 >
                   <span className="flex items-center">
-                    <FiUsers className="mr-2 text-gray-500" />
+                    <span 
+                      className="w-4 h-4 rounded-full mr-2"
+                      style={{ backgroundColor: team.color?.bg || '#CBD5E1' }}
+                    />
                     {team.name}
                   </span>
                   <span className="text-xs text-gray-500">
@@ -176,36 +223,63 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
               <>
                 <div className="border-b pb-3 mb-3 flex justify-between items-center">
                   {editingTeam ? (
-                    <div className="flex space-x-2 items-center flex-1">
+                    <div className="flex flex-col space-y-2 w-full">
                       <input
                         type="text"
                         value={newTeamName}
                         onChange={(e) => setNewTeamName(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       />
-                      <Button 
-                        variant="success" 
-                        size="sm" 
-                        onClick={handleUpdateTeam}
-                        className="flex items-center"
-                      >
-                        <FiCheck />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => {
-                          setEditingTeam(false);
-                          setNewTeamName('');
-                        }}
-                        className="flex items-center"
-                      >
-                        <FiX />
-                      </Button>
+                      
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="text-sm text-gray-500 flex items-center mr-2">
+                          <FiSettings className="mr-1" />
+                          班の色:
+                        </div>
+                        {COLOR_PALETTE.map((color, index) => (
+                          <button
+                            key={index}
+                            className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`}
+                            style={{ backgroundColor: color.bg }}
+                            onClick={() => setSelectedColor(color)}
+                            title={color.name}
+                          />
+                        ))}
+                      </div>
+                      
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="success" 
+                          size="sm" 
+                          onClick={handleUpdateTeam}
+                          className="flex items-center"
+                        >
+                          <FiCheck className="mr-1" />
+                          保存
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            setEditingTeam(false);
+                            setNewTeamName('');
+                          }}
+                          className="flex items-center"
+                        >
+                          <FiX className="mr-1" />
+                          キャンセル
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <>
-                      <h3 className="text-lg font-medium">{selectedTeam.name}</h3>
+                      <h3 className="text-lg font-medium flex items-center">
+                        <span 
+                          className="w-5 h-5 rounded-full mr-2"
+                          style={{ backgroundColor: selectedTeam.color?.bg || '#CBD5E1' }}
+                        />
+                        {selectedTeam.name}
+                      </h3>
                       <div className="flex space-x-2">
                         <Button 
                           size="sm" 

@@ -173,7 +173,7 @@ export function ReportModal({
               className="flex items-center"
             >
               <FiCheckCircle className="mr-1" />
-              完了登録
+              完了
             </Button>
           </div>
         </form>
