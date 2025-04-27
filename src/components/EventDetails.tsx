@@ -4,7 +4,7 @@ import { Event, updateEvent, deleteEvent } from '@/lib/firebaseData';
 import { StatusBadge } from './StatusBadge';
 import { Button } from './Button';
 import { ReportModal } from './ReportModal';
-import { FiCalendar, FiClock, FiUsers, FiTarget, FiCamera, FiFileText, FiCheckCircle, FiPlay, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUsers, FiTarget, FiCamera, FiFileText, FiCheckCircle, FiPlay, FiX, FiTrash2, FiAlertTriangle } from 'react-icons/fi';
 
 interface EventDetailsProps {
   event: Event;
@@ -18,9 +18,11 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose }:
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [inUseError, setInUseError] = useState<string | null>(null);
   
   const startUsing = async () => {
     try {
+      setInUseError(null);
       setIsUpdating(true);
       const updatedEvent = {
         ...event,
@@ -163,6 +165,13 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose }:
                 )}
               </>
             )}
+            
+            {inUseError && event.status === 'reserved' && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 flex items-start">
+                <FiAlertTriangle className="text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
+                <p className="text-sm">{inUseError}</p>
+              </div>
+            )}
           </div>
           
           <div className="flex justify-between space-x-3">
@@ -195,6 +204,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose }:
                 onClick={startUsing}
                 className="flex items-center"
                 disabled={isUpdating}
+                title="使用を開始します"
               >
                 <FiPlay className="mr-1" />
                 {isUpdating ? '処理中...' : '使用開始'}

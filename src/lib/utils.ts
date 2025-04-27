@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Event } from './firebaseData';
+import { Event, getTeamByName } from './firebaseData';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -43,11 +43,36 @@ export function getStatusText(status: string): string {
 
 const teamColorCache: Record<string, { bg: string, border: string }> = {};
 
+export async function getTeamColorAsync(teamName: string): Promise<{ bg: string, border: string }> {
+  if (teamColorCache[teamName]) {
+    return teamColorCache[teamName];
+  }
+  
+  try {
+    const team = await getTeamByName(teamName);
+    
+    if (team && team.color) {
+      teamColorCache[teamName] = team.color;
+      return team.color;
+    }
+  } catch (error) {
+    console.error('Error getting team color:', error);
+  }
+  
+  return getDefaultTeamColor(teamName);
+}
+
 export function getTeamColor(teamName: string): { bg: string, border: string } {
   if (teamColorCache[teamName]) {
     return teamColorCache[teamName];
   }
   
+  const color = getDefaultTeamColor(teamName);
+  teamColorCache[teamName] = color;
+  return color;
+}
+
+function getDefaultTeamColor(teamName: string): { bg: string, border: string } {
   let color: { bg: string, border: string };
   
   switch (teamName) {
@@ -77,7 +102,6 @@ export function getTeamColor(teamName: string): { bg: string, border: string } {
       };
   }
   
-  teamColorCache[teamName] = color;
   return color;
 }
 

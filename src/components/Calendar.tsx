@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getEvents, Event } from '@/lib/firebaseData';
+import { getEvents, Event, getTeams } from '@/lib/firebaseData';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -7,7 +7,7 @@ import jaLocale from '@fullcalendar/core/locales/ja';
 import { EventClickArg } from '@fullcalendar/core';
 import { EventModal } from './EventModal';
 import { EventDetails } from './EventDetails';
-import { getTeamColor } from '@/lib/utils';
+import { getTeamColor, updateTeamColorCache, getTeamColorAsync } from '@/lib/utils';
 
 export function Calendar() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -19,21 +19,30 @@ export function Calendar() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       try {
+        const teams = await getTeams();
+        for (const team of teams) {
+          if (team.color) {
+            updateTeamColorCache(team.name, team.color);
+          } else {
+            await getTeamColorAsync(team.name);
+          }
+        }
+        
         const allEvents = await getEvents();
         setEvents(allEvents);
       } catch (err) {
-        console.error('Error fetching events:', err);
-        setError('イベントデータの読み込み中にエラーが発生しました。');
+        console.error('Error fetching data:', err);
+        setError('データの読み込み中にエラーが発生しました。');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchEvents();
+    fetchData();
   }, []);
 
   const handleDateClick = (arg: { dateStr: string }) => {
