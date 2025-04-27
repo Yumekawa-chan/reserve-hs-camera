@@ -122,7 +122,8 @@ export const updateEvent = async (event: Event): Promise<Event | null> => {
       });
     } catch (error: unknown) {
       if (error instanceof Error && 'code' in error && error.code === 'not-found') {
-        console.log('Document not found, creating new one');
+        console.log('Document not found, creating new one with ID:', id);
+        
         await setDoc(eventRef, {
           ...rest,
           createdAt: serverTimestamp(),
@@ -131,6 +132,14 @@ export const updateEvent = async (event: Event): Promise<Event | null> => {
       } else {
         throw error;
       }
+    }
+    
+    const updatedDocSnap = await getDoc(eventRef);
+    if (updatedDocSnap.exists()) {
+      return {
+        id,
+        ...updatedDocSnap.data()
+      } as Event;
     }
     
     return event;

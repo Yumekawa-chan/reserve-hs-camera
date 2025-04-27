@@ -64,7 +64,7 @@ export function ReportModal({
       
       const result = await updateEvent(updatedEvent);
       if (result) {
-        onEventUpdated?.(updatedEvent);
+        onEventUpdated?.(result);
         onClose();
       } else {
         throw new Error('イベントの更新に失敗しました');

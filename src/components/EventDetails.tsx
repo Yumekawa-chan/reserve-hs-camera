@@ -23,9 +23,11 @@ export function EventDetails({ event, onEventUpdated, onClose }: EventDetailsPro
         ...event,
         status: 'in-use' as const,
       };
+      
       const result = await updateEvent(updatedEvent);
+      
       if (result) {
-        onEventUpdated?.(updatedEvent);
+        onEventUpdated?.(result);
       } else {
         throw new Error('イベントの更新に失敗しました');
       }

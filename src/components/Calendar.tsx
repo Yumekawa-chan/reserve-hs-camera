@@ -47,10 +47,14 @@ export function Calendar() {
     setIsDetailsOpen(true);
   };
 
-  const handleEventChange = async () => {
+  const handleEventChange = async (updatedEvent?: Event) => {
     try {
       const allEvents = await getEvents();
       setEvents(allEvents);
+      
+      if (updatedEvent && selectedEvent && selectedEvent.id === updatedEvent.id) {
+        setSelectedEvent(updatedEvent);
+      }
     } catch (err) {
       console.error('Error refreshing events:', err);
     }
@@ -188,7 +192,7 @@ export function Calendar() {
         isOpen={isEventModalOpen}
         onClose={() => setIsEventModalOpen(false)}
         selectedDate={selectedDate}
-        onEventAdded={handleEventChange}
+        onEventAdded={(newEvent) => handleEventChange(newEvent)}
       />
 
       {selectedEvent && (
@@ -198,8 +202,8 @@ export function Calendar() {
             <EventDetails
               event={selectedEvent}
               onClose={() => setIsDetailsOpen(false)}
-              onEventUpdated={() => {
-                handleEventChange();
+              onEventUpdated={(updatedEvent) => {
+                handleEventChange(updatedEvent);
                 setIsDetailsOpen(false);
               }}
             />
