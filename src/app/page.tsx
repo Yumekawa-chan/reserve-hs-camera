@@ -36,11 +36,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50">
+    <div className="h-screen flex flex-col overflow-hidden bg-pink-50">
       <Header />
-      <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-end mb-6 space-x-3">
+      <main className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto w-full flex flex-col overflow-hidden flex-1">
+          <div className="flex justify-end mb-4 space-x-3">
             <Button 
               onClick={handleExportCSV}
               className="flex items-center"
@@ -67,14 +67,16 @@ export default function Home() {
             </div>
           )}
           
-          <div className="bg-white rounded-2xl shadow-lg p-5 md:p-7 border-2 border-pink-100">
-            <h2 className="text-xl font-bold text-pink-600 mb-4 flex items-center">
+          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border-2 border-pink-100 flex-1 overflow-hidden flex flex-col">
+            <h2 className="text-xl font-bold text-pink-600 mb-3 flex items-center flex-shrink-0">
               <span className="bg-pink-100 rounded-full w-8 h-8 flex items-center justify-center mr-2">
                 <FiCalendar className="text-pink-500" />
               </span>
               予約カレンダー
             </h2>
-            <Calendar key={`calendar-${teamManagementLastClosed}`} />
+            <div className="flex-1 overflow-auto min-h-0">
+              <Calendar key={`calendar-${teamManagementLastClosed}`} />
+            </div>
           </div>
         </div>
         

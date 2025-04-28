@@ -148,10 +148,19 @@ export function Calendar() {
   }
 
   return (
-    <div className="calendar-wrapper">
+    <div className="calendar-wrapper h-full flex flex-col">
       <style jsx global>{`
+        .fc {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .fc .fc-view-harness {
+          flex: 1;
+          min-height: 0;
+        }
         .fc .fc-toolbar-title {
-          font-size: 1.4rem;
+          font-size: 1.2rem;
           color: #DB2777;
         }
         .fc .fc-button-primary {
@@ -160,8 +169,9 @@ export function Calendar() {
           color: #831843;
           font-weight: 600;
           border-radius: 0.75rem;
-          padding: 0.375rem 0.75rem;
+          padding: 0.25rem 0.5rem;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          font-size: 0.875rem;
         }
         .fc .fc-button-primary:hover {
           background-color: #F472B6;
@@ -194,10 +204,16 @@ export function Calendar() {
           padding: 2px;
           border-width: 2px;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+          font-size: 0.875rem;
         }
         .fc .fc-daygrid-day-number {
           color: #6B7280;
           font-weight: 500;
+          font-size: 0.875rem;
+        }
+        .fc .fc-toolbar {
+          flex-wrap: wrap;
+          row-gap: 0.5rem;
         }
       `}</style>
 
@@ -210,7 +226,7 @@ export function Calendar() {
           center: 'title',
           right: 'dayGridMonth'
         }}
-        height="auto"
+        height="100%"
         events={formatEventsForCalendar(events)}
         dateClick={handleDateClick}
         eventClick={handleEventClick}
@@ -222,6 +238,8 @@ export function Calendar() {
         buttonText={{
           today: '今日'
         }}
+        dayMaxEventRows={3}
+        moreLinkClick="day"
       />
 
       <EventModal
