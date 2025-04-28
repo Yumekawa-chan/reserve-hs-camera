@@ -13,12 +13,13 @@ export default function Home() {
   const [isExportSuccessful, setIsExportSuccessful] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
+  const [teamManagementLastClosed, setTeamManagementLastClosed] = useState(0);
 
   const handleExportCSV = async () => {
     try {
       setIsExporting(true);
       const events = await getEvents();
-      exportToCsv(events);
+      await exportToCsv(events);
       setIsExportSuccessful(true);
       setTimeout(() => setIsExportSuccessful(false), 3000);
     } catch (error) {
@@ -27,6 +28,11 @@ export default function Home() {
     } finally {
       setIsExporting(false);
     }
+  };
+
+  const handleTeamManagementClose = () => {
+    setIsTeamManagementOpen(false);
+    setTeamManagementLastClosed(Date.now());
   };
 
   return (
@@ -68,13 +74,13 @@ export default function Home() {
               </span>
               予約カレンダー
             </h2>
-            <Calendar />
+            <Calendar key={`calendar-${teamManagementLastClosed}`} />
           </div>
         </div>
         
         <TeamManagement 
           isOpen={isTeamManagementOpen}
-          onClose={() => setIsTeamManagementOpen(false)}
+          onClose={handleTeamManagementClose}
         />
       </main>
     </div>

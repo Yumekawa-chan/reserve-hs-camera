@@ -106,10 +106,40 @@ function getDefaultTeamColor(teamName: string): { bg: string, border: string } {
 }
 
 export function updateTeamColorCache(teamName: string, color: { bg: string, border: string }): void {
-  teamColorCache[teamName] = color;
+  if (!teamName) return;
+  teamColorCache[teamName] = { ...color };
 }
 
-export const exportToCsv = (events: Event[]) => {
+export function resetTeamColorCache(): void {
+  Object.keys(teamColorCache).forEach(key => {
+    delete teamColorCache[key];
+  });
+}
+
+export async function getTeamMembersStudentIds(teamName: string, participantsStr: string): Promise<string[]> {
+  try {
+    const team = await getTeamByName(teamName);
+    if (!team) return [];
+    
+    const participants = participantsStr.split('、');
+    const studentIds: string[] = [];
+    
+    for (const participant of participants) {
+      const trimmedName = participant.trim();
+      const member = team.members.find(m => m.name === trimmedName);
+      if (member) {
+        studentIds.push(member.studentId);
+      }
+    }
+    
+    return studentIds;
+  } catch (error) {
+    console.error('Error getting team members student IDs:', error);
+    return [];
+  }
+}
+
+export const exportToCsv = async (events: Event[]) => {
   const completedEvents = events.filter(event => event.status === 'completed');
   
   const headers = [
@@ -117,20 +147,31 @@ export const exportToCsv = (events: Event[]) => {
     '時間',
     '班名',
     '参加者',
+    '学籍番号',
     '撮影対象',
     '撮影枚数',
     '備考'
   ];
 
-  const rows = completedEvents.map(event => [
-    formatDate(event.date),
-    `${event.time || ''}${event.endTime ? ` - ${event.endTime}` : ''}`,
-    event.team || '',
-    event.participants || '',
-    event.target || '',
-    event.shots?.toString() || '',
-    event.notes || ''
-  ]);
+  const rows = [];
+  
+  for (const event of completedEvents) {
+    const studentIds = await getTeamMembersStudentIds(event.team, event.participants || '');
+    
+    const participants = (event.participants || '').replace(/、/g, ';');
+    const studentIdsStr = studentIds.join(';');
+    
+    rows.push([
+      formatDate(event.date),
+      `${event.time || ''}${event.endTime ? ` - ${event.endTime}` : ''}`,
+      escapeCsvField(event.team || ''),
+      `"${participants}"`, 
+      `"${studentIdsStr}"`,
+      escapeCsvField(event.target || ''),
+      event.shots?.toString() || '',
+      escapeCsvField(event.notes || '')
+    ]);
+  }
 
   const csvContent = [
     headers.join(','),
@@ -151,4 +192,11 @@ export const exportToCsv = (events: Event[]) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+function escapeCsvField(field: string): string {
+  if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+    return `"${field.replace(/"/g, '""')}"`;
+  }
+  return field;
 } 

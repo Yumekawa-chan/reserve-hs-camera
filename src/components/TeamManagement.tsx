@@ -27,10 +27,12 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [newMemberName, setNewMemberName] = useState('');
+  const [newStudentId, setNewStudentId] = useState('');
   const [editingTeam, setEditingTeam] = useState(false);
   const [selectedColor, setSelectedColor] = useState(COLOR_PALETTE[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+  const [studentIdError, setStudentIdError] = useState<string | null>(null);
   
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -176,19 +178,32 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   };
 
   const handleAddMember = async () => {
-    if (!selectedTeam || !newMemberName.trim() || isSubmitting) return;
+    if (!selectedTeam || !newMemberName.trim() || !newStudentId.trim() || isSubmitting) return;
+    
+    let hasError = false;
     
     if (!newMemberName.includes(' ')) {
       setNameError('フルネームを入力してください（姓と名の間にスペースを入れてください）');
-      return;
+      hasError = true;
+    } else {
+      setNameError(null);
     }
     
-    setNameError(null);
+    if (newStudentId.trim() === '') {
+      setStudentIdError('学籍番号を入力してください');
+      hasError = true;
+    } else {
+      setStudentIdError(null);
+    }
+    
+    if (hasError) return;
+    
     setIsSubmitting(true);
     try {
       const newMember: TeamMember = {
         id: generateId(),
-        name: newMemberName
+        name: newMemberName,
+        studentId: newStudentId
       };
       
       const updatedTeam = {
@@ -207,6 +222,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
         }
         
         setNewMemberName('');
+        setNewStudentId('');
       } else {
         throw new Error('メンバーの追加に失敗しました');
       }
@@ -468,38 +484,65 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                 </div>
                 
                 <div className="mb-4 pr-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    新しいメンバー（フルネームで入力してください）
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={newMemberName}
-                      onChange={(e) => {
-                        setNewMemberName(e.target.value);
-                        setNameError(null);
-                      }}
-                      placeholder="例：山田 太郎"
-                      className={`flex-1 px-3 py-2 border ${nameError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                      disabled={isSubmitting}
-                    />
-                    <Button 
-                      onClick={handleAddMember} 
-                      size="sm"
-                      className="flex items-center"
-                      disabled={isSubmitting || !newMemberName.trim()}
-                    >
-                      {isSubmitting ? (
-                        <FiLoader className="animate-spin" />
-                      ) : (
-                        <FiUserPlus />
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        新しいメンバー（フルネームで入力してください）
+                      </label>
+                      <input
+                        type="text"
+                        value={newMemberName}
+                        onChange={(e) => {
+                          setNewMemberName(e.target.value);
+                          setNameError(null);
+                        }}
+                        placeholder="例：山田 太郎"
+                        className={`w-full px-3 py-2 border ${nameError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                        disabled={isSubmitting}
+                      />
+                      {nameError && (
+                        <p className="mt-1 text-xs text-red-500">{nameError}</p>
                       )}
-                    </Button>
+                      <p className="mt-1 text-xs text-gray-500">※氏名を正確に入力してください（例：鈴木 花子）</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        学籍番号
+                      </label>
+                      <input
+                        type="text"
+                        value={newStudentId}
+                        onChange={(e) => {
+                          setNewStudentId(e.target.value);
+                          setStudentIdError(null);
+                        }}
+                        placeholder="例：24AMJ21"
+                        className={`w-full px-3 py-2 border ${studentIdError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                        disabled={isSubmitting}
+                      />
+                      {studentIdError && (
+                        <p className="mt-1 text-xs text-red-500">{studentIdError}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Button 
+                        onClick={handleAddMember} 
+                        className="w-full flex items-center justify-center"
+                        disabled={isSubmitting || !newMemberName.trim() || !newStudentId.trim()}
+                      >
+                        {isSubmitting ? (
+                          <FiLoader className="animate-spin" />
+                        ) : (
+                          <>
+                            <FiUserPlus className="mr-2" />
+                            メンバーを追加
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  {nameError && (
-                    <p className="mt-1 text-xs text-red-500">{nameError}</p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-500">※氏名を正確に入力してください（例：鈴木 花子）</p>
                 </div>
                 
                 <div className="overflow-y-auto flex-1">
@@ -518,7 +561,10 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                         >
                           <span className="flex items-center">
                             <FiUser className="mr-2 text-gray-500" />
-                            {member.name}
+                            <span className="flex flex-col">
+                              <span>{member.name}</span>
+                              <span className="text-xs text-gray-500">学籍番号: {member.studentId}</span>
+                            </span>
                           </span>
                           <Button 
                             size="sm" 

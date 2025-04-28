@@ -7,7 +7,7 @@ import jaLocale from '@fullcalendar/core/locales/ja';
 import { EventClickArg } from '@fullcalendar/core';
 import { EventModal } from './EventModal';
 import { EventDetails } from './EventDetails';
-import { getTeamColor, updateTeamColorCache } from '@/lib/utils';
+import { getTeamColor, updateTeamColorCache, resetTeamColorCache } from '@/lib/utils';
 
 export function Calendar() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -17,32 +17,40 @@ export function Calendar() {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [teamColors, setTeamColors] = useState<Record<string, { bg: string, border: string }>>({});
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      resetTeamColorCache();
+      const localTeamColors: Record<string, { bg: string, border: string }> = {};
+      
+      const teams = await getTeams();
+      for (const team of teams) {
+        if (team.color) {
+          localTeamColors[team.name] = team.color;
+          updateTeamColorCache(team.name, team.color);
+        } else {
+          const defaultColor = getTeamColor(team.name);
+          localTeamColors[team.name] = defaultColor;
+          updateTeamColorCache(team.name, defaultColor);
+        }
+      }
+      
+      setTeamColors(localTeamColors);
+      
+      const allEvents = await getEvents();
+      setEvents(allEvents);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('データの読み込み中にエラーが発生しました。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const teams = await getTeams();
-        for (const team of teams) {
-          if (team.color) {
-            updateTeamColorCache(team.name, team.color);
-          } else {
-            const defaultColor = getTeamColor(team.name);
-            updateTeamColorCache(team.name, defaultColor);
-          }
-        }
-        
-        const allEvents = await getEvents();
-        setEvents(allEvents);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('データの読み込み中にエラーが発生しました。');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -59,8 +67,7 @@ export function Calendar() {
 
   const handleEventChange = async (updatedEvent?: Event) => {
     try {
-      const allEvents = await getEvents();
-      setEvents(allEvents);
+      fetchData();
       
       if (updatedEvent && selectedEvent && selectedEvent.id === updatedEvent.id) {
         setSelectedEvent(updatedEvent);
@@ -72,8 +79,7 @@ export function Calendar() {
 
   const handleEventDeleted = async (eventId: string) => {
     try {
-      const allEvents = await getEvents();
-      setEvents(allEvents);
+      fetchData();
       
       if (selectedEvent && selectedEvent.id === eventId) {
         setSelectedEvent(null);
@@ -93,9 +99,15 @@ export function Calendar() {
         backgroundColor = '#EF4444';
         borderColor = '#DC2626';
       } else {
-        const teamColors = getTeamColor(event.team);
-        backgroundColor = teamColors.bg;
-        borderColor = teamColors.border;
+        const teamColor = teamColors[event.team];
+        if (teamColor) {
+          backgroundColor = teamColor.bg;
+          borderColor = teamColor.border;
+        } else {
+          const fallbackColors = getTeamColor(event.team);
+          backgroundColor = fallbackColors.bg;
+          borderColor = fallbackColors.border;
+        }
       }
 
       const timeDisplay = event.time ? 

@@ -32,6 +32,7 @@ export interface Event {
 export interface TeamMember {
   id: string;
   name: string;
+  studentId: string;
 }
 
 export interface Team {
