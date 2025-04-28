@@ -12,13 +12,14 @@ export function CsvPasswordModal({ isOpen, onClose, onSuccess }: CsvPasswordModa
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   
   if (!isOpen) return null;
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!password.trim()) return;
+    if (!password.trim() || isLocked) return;
     
     setIsSubmitting(true);
     setError(null);
@@ -46,6 +47,7 @@ export function CsvPasswordModal({ isOpen, onClose, onSuccess }: CsvPasswordModa
           setError(`パスワードが正しくありません。残り試行回数: ${data.remainingAttempts}回`);
         } else {
           setError('認証試行回数が上限に達しました。しばらく経ってから再試行してください。');
+          setIsLocked(true);
         }
         setPassword('');
       }
@@ -93,10 +95,11 @@ export function CsvPasswordModal({ isOpen, onClose, onSuccess }: CsvPasswordModa
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`pl-10 w-full px-4 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                placeholder="パスワードを入力"
+                className={`pl-10 w-full px-4 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} ${isLocked ? 'bg-gray-100' : ''} rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                placeholder={isLocked ? "アクセスがロックされています" : "パスワードを入力"}
                 required
                 autoFocus
+                disabled={isLocked}
               />
             </div>
             {error && (
@@ -117,9 +120,9 @@ export function CsvPasswordModal({ isOpen, onClose, onSuccess }: CsvPasswordModa
             <Button
               type="submit"
               className="flex items-center"
-              disabled={isSubmitting || !password}
+              disabled={isSubmitting || !password || isLocked}
             >
-              {isSubmitting ? '認証中...' : '認証して出力'}
+              {isLocked ? 'アクセスがロックされています' : (isSubmitting ? '認証中...' : '認証して出力')}
             </Button>
           </div>
         </form>
