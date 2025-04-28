@@ -95,19 +95,14 @@ export function Calendar({ onReportCompleted }: CalendarProps) {
   };
 
   const formatEventsForCalendar = (events: Event[]) => {
-    // イベントを日付ごとにグループ化してソートする
     const sortedEvents = [...events].sort((a, b) => {
-      // 日付が異なる場合はそのまま（FullCalendarが日付ごとに表示するため）
       if (a.date !== b.date) return 0;
       
-      // 両方とも時間がない場合は順序を維持
       if (!a.time && !b.time) return 0;
       
-      // 片方だけ時間がない場合、時間があるものを優先
       if (!a.time) return 1;
       if (!b.time) return -1;
       
-      // 両方とも時間がある場合は時間で比較
       return a.time.localeCompare(b.time);
     });
 

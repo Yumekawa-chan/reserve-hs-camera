@@ -8,34 +8,57 @@ interface PasswordEntryProps {
 
 export function PasswordEntry({ onAuthenticated }: PasswordEntryProps) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!password.trim()) return;
+    
     setIsSubmitting(true);
-    setError(false);
+    setError(null);
     
-    const correctPassword = process.env.NEXT_PUBLIC_ENTER_PASSWORD;
-    
-    if (password === correctPassword) {
-      const now = new Date();
-      const expiryDate = new Date(now);
-      expiryDate.setDate(now.getDate() + 2); 
+    try {
+      const response = await fetch('/api/auth/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          type: 'enter',
+        }),
+      });
       
-      const authData = {
-        isAuthenticated: true,
-        expiry: expiryDate.getTime() 
-      };
+      const data = await response.json();
       
-      localStorage.setItem('authData', JSON.stringify(authData));
-      onAuthenticated();
-    } else {
-      setError(true);
-      setPassword('');
+      if (response.ok && data.success) {
+        const now = new Date();
+        const expiryDate = new Date(now);
+        expiryDate.setDate(now.getDate() + 2);
+        
+        const authData = {
+          isAuthenticated: true,
+          expiry: expiryDate.getTime()
+        };
+        
+        localStorage.setItem('authData', JSON.stringify(authData));
+        onAuthenticated();
+      } else {
+        if (data.remainingAttempts > 0) {
+          setError(`パスワードが正しくありません。残り試行回数: ${data.remainingAttempts}回`);
+        } else {
+          setError('認証試行回数が上限に達しました。しばらく経ってから再試行してください。');
+        }
+        setPassword('');
+      }
+    } catch (error) {
+      console.error('認証エラー:', error);
+      setError('認証中にエラーが発生しました。再度お試しください。');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
   
   return (
@@ -72,7 +95,7 @@ export function PasswordEntry({ onAuthenticated }: PasswordEntryProps) {
           </div>
           {error && (
             <p className="mt-2 text-sm text-red-600">
-              パスワードが正しくありません。再度お試しください。
+              {error}
             </p>
           )}
         </div>

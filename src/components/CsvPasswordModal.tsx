@@ -10,28 +10,51 @@ interface CsvPasswordModalProps {
 
 export function CsvPasswordModal({ isOpen, onClose, onSuccess }: CsvPasswordModalProps) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   if (!isOpen) return null;
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!password.trim()) return;
+    
     setIsSubmitting(true);
-    setError(false);
+    setError(null);
     
-    const correctPassword = process.env.NEXT_PUBLIC_CSV_PASSWORD;
-    
-    if (password === correctPassword) {
-      setPassword('');
-      onSuccess();
-      onClose();
-    } else {
-      setError(true);
-      setPassword('');
+    try {
+      const response = await fetch('/api/auth/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          type: 'csv',
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setPassword('');
+        onSuccess();
+        onClose();
+      } else {
+        if (data.remainingAttempts > 0) {
+          setError(`パスワードが正しくありません。残り試行回数: ${data.remainingAttempts}回`);
+        } else {
+          setError('認証試行回数が上限に達しました。しばらく経ってから再試行してください。');
+        }
+        setPassword('');
+      }
+    } catch (error) {
+      console.error('認証エラー:', error);
+      setError('認証中にエラーが発生しました。再度お試しください。');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
   
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -78,7 +101,7 @@ export function CsvPasswordModal({ isOpen, onClose, onSuccess }: CsvPasswordModa
             </div>
             {error && (
               <p className="mt-2 text-sm text-red-600">
-                パスワードが正しくありません。再度お試しください。
+                {error}
               </p>
             )}
           </div>
