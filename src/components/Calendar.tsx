@@ -9,7 +9,11 @@ import { EventModal } from './EventModal';
 import { EventDetails } from './EventDetails';
 import { getTeamColor, updateTeamColorCache, resetTeamColorCache } from '@/lib/utils';
 
-export function Calendar() {
+interface CalendarProps {
+  onReportCompleted?: () => void;
+}
+
+export function Calendar({ onReportCompleted }: CalendarProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -261,6 +265,7 @@ export function Calendar() {
                 setIsDetailsOpen(false);
               }}
               onEventDeleted={handleEventDeleted}
+              onReportCompleted={onReportCompleted}
             />
           </div>
         </div>

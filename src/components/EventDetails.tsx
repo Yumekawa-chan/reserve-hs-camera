@@ -11,9 +11,10 @@ interface EventDetailsProps {
   onEventUpdated?: (event: Event) => void;
   onEventDeleted?: (eventId: string) => void;
   onClose: () => void;
+  onReportCompleted?: () => void;
 }
 
-export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose }: EventDetailsProps) {
+export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted }: EventDetailsProps) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -229,7 +230,11 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose }:
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         event={event}
-        onEventUpdated={onEventUpdated}
+        onEventUpdated={(updatedEvent) => {
+          setIsReportModalOpen(false);
+          onEventUpdated?.(updatedEvent);
+        }}
+        onCompleted={onReportCompleted}
       />
     </div>
   );

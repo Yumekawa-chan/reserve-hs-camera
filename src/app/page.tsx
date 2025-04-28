@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { TeamManagement } from '@/components/TeamManagement';
@@ -8,12 +8,29 @@ import { Header } from '@/components/Header';
 import { exportToCsv } from '@/lib/utils';
 import { getEvents } from '@/lib/firebaseData';
 import { FiDownload, FiSettings, FiCheck, FiCalendar } from 'react-icons/fi';
+import Confetti from 'react-confetti';
 
 export default function Home() {
   const [isExportSuccessful, setIsExportSuccessful] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
   const [teamManagementLastClosed, setTeamManagementLastClosed] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const updateWindowSize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    updateWindowSize();
+    window.addEventListener('resize', updateWindowSize);
+
+    return () => window.removeEventListener('resize', updateWindowSize);
+  }, []);
 
   const handleExportCSV = async () => {
     try {
@@ -35,9 +52,36 @@ export default function Home() {
     setTeamManagementLastClosed(Date.now());
   };
 
+  const handleReportCompleted = () => {
+    setShowConfetti(true);
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 3000);
+  };
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-pink-50">
       <Header />
+      {showConfetti && (
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          recycle={false}
+          numberOfPieces={500}
+          colors={['#EC4899', '#F472B6', '#F9A8D4', '#4F46E5', '#10B981', '#F59E0B']}
+          gravity={0.3}
+          initialVelocityX={15}
+          initialVelocityY={30}
+          confettiSource={{
+            x: windowSize.width / 2,
+            y: windowSize.height / 2,
+            w: 0,
+            h: 0
+          }}
+          tweenDuration={100}
+          wind={0.05}
+        />
+      )}
       <main className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto w-full flex flex-col overflow-hidden flex-1">
           <div className="flex justify-end mb-4 space-x-3">
@@ -75,7 +119,7 @@ export default function Home() {
               予約カレンダー
             </h2>
             <div className="flex-1 overflow-auto min-h-0">
-              <Calendar key={`calendar-${teamManagementLastClosed}`} />
+              <Calendar key={`calendar-${teamManagementLastClosed}`} onReportCompleted={handleReportCompleted} />
             </div>
           </div>
         </div>

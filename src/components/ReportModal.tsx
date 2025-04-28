@@ -8,6 +8,7 @@ interface ReportModalProps {
   onClose: () => void;
   event: Event;
   onEventUpdated?: (event: Event) => void;
+  onCompleted?: () => void;
 }
 
 export function ReportModal({
@@ -15,6 +16,7 @@ export function ReportModal({
   onClose,
   event,
   onEventUpdated,
+  onCompleted,
 }: ReportModalProps) {
   const [participants, setParticipants] = useState(event.participants || '');
   const [target, setTarget] = useState(event.target || '');
@@ -65,7 +67,11 @@ export function ReportModal({
       const result = await updateEvent(updatedEvent);
       if (result) {
         onEventUpdated?.(result);
-        onClose();
+        onCompleted?.();
+        
+        setTimeout(() => {
+          onClose();
+        }, 3000);
       } else {
         throw new Error('イベントの更新に失敗しました');
       }
