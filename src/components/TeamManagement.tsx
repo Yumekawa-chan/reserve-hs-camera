@@ -30,6 +30,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const [editingTeam, setEditingTeam] = useState(false);
   const [selectedColor, setSelectedColor] = useState(COLOR_PALETTE[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -177,6 +178,12 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
   const handleAddMember = async () => {
     if (!selectedTeam || !newMemberName.trim() || isSubmitting) return;
     
+    if (!newMemberName.includes(' ')) {
+      setNameError('フルネームを入力してください（姓と名の間にスペースを入れてください）');
+      return;
+    }
+    
+    setNameError(null);
     setIsSubmitting(true);
     try {
       const newMember: TeamMember = {
@@ -461,13 +468,19 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                 </div>
                 
                 <div className="mb-4 pr-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    新しいメンバー（フルネームで入力してください）
+                  </label>
                   <div className="flex space-x-2">
                     <input
                       type="text"
                       value={newMemberName}
-                      onChange={(e) => setNewMemberName(e.target.value)}
-                      placeholder="新しいメンバー名"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      onChange={(e) => {
+                        setNewMemberName(e.target.value);
+                        setNameError(null);
+                      }}
+                      placeholder="例：山田 太郎"
+                      className={`flex-1 px-3 py-2 border ${nameError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                       disabled={isSubmitting}
                     />
                     <Button 
@@ -483,6 +496,10 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                       )}
                     </Button>
                   </div>
+                  {nameError && (
+                    <p className="mt-1 text-xs text-red-500">{nameError}</p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">※氏名を正確に入力してください（例：鈴木 花子）</p>
                 </div>
                 
                 <div className="overflow-y-auto flex-1">

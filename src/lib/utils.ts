@@ -110,7 +110,6 @@ export function updateTeamColorCache(teamName: string, color: { bg: string, bord
 }
 
 export const exportToCsv = (events: Event[]) => {
-  // 完了済みのイベントのみをフィルタリング
   const completedEvents = events.filter(event => event.status === 'completed');
   
   const headers = [
