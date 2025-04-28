@@ -5,14 +5,15 @@ import { updateTeamColorCache } from '@/lib/utils';
 import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings, FiLoader } from 'react-icons/fi';
 
 const COLOR_PALETTE = [
-  { name: 'インディゴ', bg: '#4F46E5', border: '#4338CA' },
-  { name: 'エメラルド', bg: '#10B981', border: '#059669' },
-  { name: 'バイオレット', bg: '#8B5CF6', border: '#7C3AED' },
-  { name: 'アンバー', bg: '#F59E0B', border: '#D97706' },
-  { name: 'フクシャ', bg: '#D946EF', border: '#C026D3' },
-  { name: 'ティール', bg: '#14B8A6', border: '#0D9488' },
-  { name: 'ライム', bg: '#84CC16', border: '#65A30D' },
+  { name: 'オレンジ', bg: '#F59E0B', border: '#D97706' },    
+  { name: 'イエロー', bg: '#ECC94B', border: '#D69E2E' },
   { name: 'ピンク', bg: '#EC4899', border: '#DB2777' },
+
+  { name: 'ライム', bg: '#84CC16', border: '#65A30D' },      
+  { name: 'グリーン', bg: '#10B981', border: '#059669' },    
+  { name: 'ティール', bg: '#0EA5E9', border: '#0284C7' },    
+  { name: 'ブルー', bg: '#4F46E5', border: '#4338CA' },      
+  { name: 'パープル', bg: '#9F7AEA', border: '#805AD5' },    
 ];
 
 interface TeamManagementProps {

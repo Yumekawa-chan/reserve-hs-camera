@@ -77,11 +77,15 @@ function getDefaultTeamColor(teamName: string): { bg: string, border: string } {
     return char.charCodeAt(0) + ((acc << 5) - acc);
   }, 0);
   
-  const hue = Math.abs(hash % 280);
+  const hue = Math.abs(hash % 360);
+  
+  const saturation = 75;
+  const lightness = 55;
+  const borderLightness = 45;
   
   return { 
-    bg: `hsl(${hue}, 70%, 60%)`, 
-    border: `hsl(${hue}, 70%, 50%)` 
+    bg: `hsl(${hue}, ${saturation}%, ${lightness}%)`, 
+    border: `hsl(${hue}, ${saturation}%, ${borderLightness}%)` 
   };
 }
 
