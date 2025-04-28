@@ -73,36 +73,16 @@ export function getTeamColor(teamName: string): { bg: string, border: string } {
 }
 
 function getDefaultTeamColor(teamName: string): { bg: string, border: string } {
-  let color: { bg: string, border: string };
+  const hash = teamName.split('').reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
   
-  switch (teamName) {
-    case '第一研究班':
-      color = { bg: '#4F46E5', border: '#4338CA' }; // インディゴ
-      break;
-    case '第二研究班':
-      color = { bg: '#0EA5E9', border: '#0284C7' }; // スカイブルー
-      break;
-    case '第三研究班':
-      color = { bg: '#10B981', border: '#059669' }; // エメラルド
-      break;
-    case '環境分析チーム':
-      color = { bg: '#8B5CF6', border: '#7C3AED' }; // バイオレット
-      break;
-    case '材料研究班':
-      color = { bg: '#F59E0B', border: '#D97706' }; // アンバー
-      break;
-    default:
-      const hash = teamName.split('').reduce((acc, char) => {
-        return char.charCodeAt(0) + ((acc << 5) - acc);
-      }, 0);
-      const hue = Math.abs(hash % 280);
-      color = { 
-        bg: `hsl(${hue}, 70%, 60%)`, 
-        border: `hsl(${hue}, 70%, 50%)` 
-      };
-  }
+  const hue = Math.abs(hash % 280);
   
-  return color;
+  return { 
+    bg: `hsl(${hue}, 70%, 60%)`, 
+    border: `hsl(${hue}, 70%, 50%)` 
+  };
 }
 
 export function updateTeamColorCache(teamName: string, color: { bg: string, border: string }): void {
