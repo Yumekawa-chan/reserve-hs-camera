@@ -6,6 +6,7 @@ import { Calendar } from '@/components/Calendar';
 import { TeamManagement } from '@/components/TeamManagement';
 import { Header } from '@/components/Header';
 import { PasswordEntry } from '@/components/PasswordEntry';
+import { CsvPasswordModal } from '@/components/CsvPasswordModal';
 import { exportToCsv } from '@/lib/utils';
 import { getEvents } from '@/lib/firebaseData';
 import { FiDownload, FiSettings, FiCheck, FiCalendar } from 'react-icons/fi';
@@ -19,6 +20,7 @@ export default function Home() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCsvPasswordModalOpen, setIsCsvPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -51,6 +53,10 @@ export default function Home() {
   }, []);
 
   const handleExportCSV = async () => {
+    setIsCsvPasswordModalOpen(true);
+  };
+  
+  const performExportCSV = async () => {
     try {
       setIsExporting(true);
       const events = await getEvents();
@@ -161,6 +167,12 @@ export default function Home() {
           />
         )}
       </main>
+      
+      <CsvPasswordModal
+        isOpen={isCsvPasswordModalOpen}
+        onClose={() => setIsCsvPasswordModalOpen(false)}
+        onSuccess={performExportCSV}
+      />
     </div>
   );
 }
