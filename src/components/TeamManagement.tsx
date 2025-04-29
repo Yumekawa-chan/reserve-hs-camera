@@ -312,14 +312,14 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
         
         <div className="flex flex-1 overflow-hidden">
           <div className="w-1/3 border-r border-blue-100 pr-4 flex flex-col overflow-hidden">
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100 flex-shrink-0">
-              <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
-                <FiPlus className="mr-1" />
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100 flex-shrink-0 shadow-sm">
+              <h3 className="text-sm font-medium text-blue-700 mb-3 flex items-center">
+                <FiPlus className="mr-1.5" />
                 新しい班を追加
               </h3>
-              <div className="flex flex-col space-y-2">
+              <div className="flex flex-col space-y-3">
                 <div className="flex items-center">
-                  <FiTag className="text-blue-500 mr-2" />
+                  <FiTag className="text-blue-500 mr-2 flex-shrink-0" />
                   <input
                     type="text"
                     value={newTeamName}
@@ -330,37 +330,40 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   />
                 </div>
                 
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <span className="text-xs text-blue-600 flex items-center mr-1">
-                    <FiPenTool className="mr-1" size={12} />
-                    班の色:
-                  </span>
-                  {COLOR_PALETTE.map((color, index) => (
-                    <button
-                      key={index}
-                      className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
-                      style={{ backgroundColor: color.bg }}
-                      onClick={() => setSelectedColor(color)}
-                      title={color.name}
-                      disabled={isSubmitting}
-                    />
-                  ))}
+                <div>
+                  <div className="text-sm text-blue-700 flex items-center mb-2">
+                    <FiPenTool className="mr-1.5" size={14} />
+                    班の色を選択:
+                  </div>
+                  <div className="flex flex-wrap gap-2.5 pl-1">
+                    {COLOR_PALETTE.map((color, index) => (
+                      <button
+                        key={index}
+                        className={`w-7 h-7 rounded-full transition-all ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'hover:scale-110'}`}
+                        style={{ backgroundColor: color.bg }}
+                        onClick={() => setSelectedColor(color)}
+                        title={color.name}
+                        disabled={isSubmitting}
+                        aria-label={`${color.name}を選択`}
+                      />
+                    ))}
+                  </div>
                 </div>
                 
                 <Button 
                   onClick={handleAddTeam} 
-                  className="flex items-center justify-center mt-2"
+                  className="flex items-center justify-center mt-1"
                   variant="blue"
                   disabled={isSubmitting || !newTeamName.trim()}
                 >
                   {isSubmitting ? (
                     <>
-                      <FiLoader className="mr-1 animate-spin" />
+                      <FiLoader className="mr-2 animate-spin" />
                       処理中...
                     </>
                   ) : (
                     <>
-                      <FiPlus className="mr-1" />
+                      <FiPlus className="mr-2" />
                       新しい班を作成
                     </>
                   )}
@@ -369,40 +372,44 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
             </div>
             
             <div className="flex flex-col overflow-hidden flex-1">
-              <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center flex-shrink-0">
-                <FiUsers className="mr-1" />
+              <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center flex-shrink-0 px-1">
+                <FiUsers className="mr-1.5" />
                 班一覧
               </h3>
-              <div className="overflow-y-auto flex-1">
-                <ul className="space-y-1">
-                  {teams.map(team => (
-                    <li 
-                      key={team.id}
-                      className={`px-3 py-2 rounded-md cursor-pointer flex justify-between items-center transition-colors ${
-                        selectedTeam?.id === team.id ? 'bg-blue-100 border border-blue-200' : 'hover:bg-blue-50 border border-transparent'
-                      }`}
-                      onClick={() => handleSelectTeam(team)}
-                    >
-                      <span className="flex items-center">
-                        <span 
-                          className="w-4 h-4 rounded-full mr-2"
-                          style={{ backgroundColor: team.color?.bg || '#CBD5E1' }}
-                        />
-                        <span className={`${selectedTeam?.id === team.id ? 'font-medium text-blue-800' : 'text-gray-700'}`}>
-                          {team.name}
+              <div className="overflow-y-auto flex-1 bg-white rounded-lg border border-blue-100 shadow-sm">
+                {teams.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-gray-500">
+                    <p className="text-sm">班が登録されていません</p>
+                    <p className="text-xs mt-1 text-gray-400">新しい班を作成してください</p>
+                  </div>
+                ) : (
+                  <ul className="p-1.5 space-y-1">
+                    {teams.map(team => (
+                      <li 
+                        key={team.id}
+                        className={`px-3 py-2.5 rounded-md cursor-pointer flex justify-between items-center transition-all ${
+                          selectedTeam?.id === team.id 
+                            ? 'bg-blue-100 border border-blue-200 shadow-sm' 
+                            : 'hover:bg-blue-50 border border-transparent'
+                        }`}
+                        onClick={() => handleSelectTeam(team)}
+                      >
+                        <span className="flex items-center">
+                          <span 
+                            className="w-4 h-4 rounded-full mr-2 flex-shrink-0 shadow-sm"
+                            style={{ backgroundColor: team.color?.bg || '#CBD5E1' }}
+                          />
+                          <span className={`${selectedTeam?.id === team.id ? 'font-medium text-blue-800' : 'text-gray-700'} truncate`}>
+                            {team.name}
+                          </span>
                         </span>
-                      </span>
-                      <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">
-                        {team.members.length}名
-                      </span>
-                    </li>
-                  ))}
-                  {teams.length === 0 && (
-                    <li className="px-3 py-2 text-center text-gray-500 text-sm">
-                      班が登録されていません
-                    </li>
-                  )}
-                </ul>
+                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-2">
+                          {team.members.length}名
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
@@ -412,14 +419,14 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
               <>
                 <div className="border-b border-blue-100 pb-3 mb-3 flex-shrink-0">
                   {editingTeam ? (
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                      <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
-                        <FiEdit className="mr-1" />
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 shadow-sm">
+                      <h3 className="text-sm font-medium text-blue-700 mb-3 flex items-center">
+                        <FiEdit className="mr-1.5" />
                         班の情報を編集
                       </h3>
                       <div className="flex flex-col space-y-3 w-full">
                         <div className="flex items-center">
-                          <FiTag className="text-blue-500 mr-2" />
+                          <FiTag className="text-blue-500 mr-2 flex-shrink-0" />
                           <input
                             type="text"
                             value={newTeamName}
@@ -430,21 +437,24 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           />
                         </div>
                         
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <div className="text-sm text-blue-600 flex items-center mr-2">
-                            <FiPenTool className="mr-1" />
-                            班の色:
+                        <div>
+                          <div className="text-sm text-blue-700 flex items-center mb-2">
+                            <FiPenTool className="mr-1.5" size={14} />
+                            班の色を選択:
                           </div>
-                          {COLOR_PALETTE.map((color, index) => (
-                            <button
-                              key={index}
-                              className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
-                              style={{ backgroundColor: color.bg }}
-                              onClick={() => setSelectedColor(color)}
-                              title={color.name}
-                              disabled={isSubmitting}
-                            />
-                          ))}
+                          <div className="flex flex-wrap gap-2.5 pl-1">
+                            {COLOR_PALETTE.map((color, index) => (
+                              <button
+                                key={index}
+                                className={`w-7 h-7 rounded-full transition-all ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : 'hover:scale-110'}`}
+                                style={{ backgroundColor: color.bg }}
+                                onClick={() => setSelectedColor(color)}
+                                title={color.name}
+                                disabled={isSubmitting}
+                                aria-label={`${color.name}を選択`}
+                              />
+                            ))}
+                          </div>
                         </div>
                         
                         <div className="flex space-x-2 pt-2">
@@ -457,12 +467,12 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           >
                             {isSubmitting ? (
                               <>
-                                <FiLoader className="mr-1 animate-spin" />
+                                <FiLoader className="mr-1.5 animate-spin" />
                                 処理中...
                               </>
                             ) : (
                               <>
-                                <FiCheck className="mr-1" />
+                                <FiCheck className="mr-1.5" />
                                 変更を保存
                               </>
                             )}
@@ -477,17 +487,17 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                             className="flex items-center"
                             disabled={isSubmitting}
                           >
-                            <FiX className="mr-1" />
+                            <FiX className="mr-1.5" />
                             キャンセル
                           </Button>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg shadow-sm">
                       <h3 className="text-lg font-medium flex items-center">
                         <span 
-                          className="w-5 h-5 rounded-full mr-2"
+                          className="w-5 h-5 rounded-full mr-2.5 shadow-sm"
                           style={{ backgroundColor: selectedTeam.color?.bg || '#CBD5E1' }}
                         />
                         <span className="text-blue-800">{selectedTeam.name}</span>
@@ -500,7 +510,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           className="flex items-center"
                           disabled={isSubmitting}
                         >
-                          <FiEdit className="mr-1" />
+                          <FiEdit className="mr-1.5" />
                           班名・色を編集
                         </Button>
                         <Button 
@@ -514,7 +524,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                             <FiLoader className="animate-spin" />
                           ) : (
                             <>
-                              <FiTrash2 className="mr-1" />
+                              <FiTrash2 className="mr-1.5" />
                               班を削除
                             </>
                           )}
@@ -524,15 +534,15 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   )}
                 </div>
                 
-                <div className="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100 flex-shrink-0">
-                  <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
-                    <FiUserPlus className="mr-1" />
+                <div className="mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100 flex-shrink-0 shadow-sm">
+                  <h3 className="text-sm font-medium text-blue-700 mb-3 flex items-center">
+                    <FiUserPlus className="mr-1.5" />
                     新しいメンバーを追加
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-blue-700 mb-1 flex items-center">
-                        <FiUser className="mr-1" size={14} />
+                      <label className="block text-sm font-medium text-blue-700 mb-1.5 flex items-center">
+                        <FiUser className="mr-1.5" size={14} />
                         氏名（フルネーム）
                       </label>
                       <input
@@ -553,8 +563,8 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-blue-700 mb-1 flex items-center">
-                        <FiClipboard className="mr-1" size={14} />
+                      <label className="block text-sm font-medium text-blue-700 mb-1.5 flex items-center">
+                        <FiClipboard className="mr-1.5" size={14} />
                         学籍番号
                       </label>
                       <input
@@ -574,7 +584,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                     </div>
                   </div>
                   
-                  <div className="mt-3">
+                  <div className="mt-4">
                     <Button 
                       onClick={handleAddMember}
                       variant="blue"
@@ -593,7 +603,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   </div>
                 </div>
                 
-                <div className="flex-1 bg-white rounded-lg border border-blue-100 flex flex-col overflow-hidden">
+                <div className="flex-1 bg-white rounded-lg border border-blue-100 flex flex-col overflow-hidden shadow-sm">
                   <div className="p-3 border-b border-blue-100 bg-blue-50 flex-shrink-0">
                     <h4 className="font-medium flex items-center text-blue-700">
                       <FiUsers className="mr-2" />
@@ -602,16 +612,21 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   </div>
                   <div className="p-2 overflow-y-auto flex-1">
                     {selectedTeam.members.length === 0 ? (
-                      <p className="text-gray-500 text-sm text-center py-4">メンバーが登録されていません</p>
+                      <div className="flex flex-col items-center justify-center h-full py-6 text-center">
+                        <p className="text-gray-500 text-sm mb-1">メンバーが登録されていません</p>
+                        <p className="text-gray-400 text-xs">上のフォームからメンバーを追加してください</p>
+                      </div>
                     ) : (
-                      <ul className="space-y-1">
+                      <ul className="space-y-1.5 p-1.5">
                         {selectedTeam.members.map(member => (
                           <li 
                             key={member.id}
-                            className="px-3 py-2 rounded-md flex justify-between items-center hover:bg-blue-50 border border-transparent hover:border-blue-100"
+                            className="px-3 py-2.5 rounded-md flex justify-between items-center hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all"
                           >
                             <span className="flex items-center">
-                              <FiUser className="mr-2 text-blue-500" />
+                              <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-3 flex-shrink-0">
+                                <FiUser size={16} />
+                              </span>
                               <span className="flex flex-col">
                                 <span className="font-medium">{member.name}</span>
                                 <span className="text-xs text-gray-500">学籍番号: {member.studentId}</span>
@@ -624,6 +639,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                               className="flex items-center"
                               disabled={isSubmitting}
                               title="メンバーを削除"
+                              aria-label={`${member.name}を削除`}
                             >
                               {isSubmitting ? (
                                 <FiLoader className="animate-spin" />
@@ -639,22 +655,26 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500 bg-blue-50 rounded-lg p-8">
-                <FiUsers size={48} className="mb-4 text-blue-400" />
-                <p className="text-blue-600 font-medium">左側のリストから班を選択するか、新しい班を作成してください</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 bg-blue-50 rounded-lg p-8 shadow-sm">
+                <FiUsers size={48} className="mb-5 text-blue-400" />
+                <p className="text-blue-600 font-medium mb-2">班が選択されていません</p>
+                <p className="text-gray-500 text-sm text-center">
+                  左側のリストから班を選択するか、<br />新しい班を作成してください
+                </p>
               </div>
             )}
           </div>
         </div>
         
-        <div className="flex justify-end mt-4 pt-4 border-t border-blue-100">
+        <div className="flex justify-end mt-5 pt-4 border-t border-blue-100">
           <Button 
             onClick={onClose}
-            className="flex items-center"
+            className="flex items-center px-6"
             variant="blue"
             disabled={isSubmitting}
+            size="md"
           >
-            <FiCheck className="mr-1" />
+            <FiCheck className="mr-2" />
             設定を完了
           </Button>
         </div>
