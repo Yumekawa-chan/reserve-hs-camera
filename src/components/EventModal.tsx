@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
 import { Event, Team, addEvent, generateId, getTeams, updateEvent } from '@/lib/firebaseData';
-import { FiClock, FiUsers, FiCalendar, FiArrowRight } from 'react-icons/fi';
+import { FiClock, FiUsers, FiCalendar, FiArrowRight, FiAlertCircle } from 'react-icons/fi';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -24,6 +24,7 @@ export function EventModal({
   const [team, setTeam] = useState(existingEvent?.team || '');
   const [startTime, setStartTime] = useState(existingEvent?.time || '09:00');
   const [endTime, setEndTime] = useState(existingEvent?.endTime || '11:00');
+  const [timeError, setTimeError] = useState<string | null>(null);
   
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +36,33 @@ export function EventModal({
     fetchTeams();
   }, []);
 
+  useEffect(() => {
+    validateTimeRange();
+  }, [startTime, endTime]);
+
+  const validateTimeRange = () => {
+    const minTime = '06:00';
+    const maxTime = '24:00';
+    
+    if (startTime < minTime) {
+      setTimeError('開始時間は6:00以降に設定してください');
+      return false;
+    }
+    
+    if (endTime > maxTime) {
+      setTimeError('終了時間は24:00までに設定してください');
+      return false;
+    }
+    
+    if (startTime >= endTime) {
+      setTimeError('開始時間は終了時間より前に設定してください');
+      return false;
+    }
+    
+    setTimeError(null);
+    return true;
+  };
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
@@ -45,6 +73,10 @@ export function EventModal({
     e.preventDefault();
     
     if (!team) return;
+    
+    if (!validateTimeRange()) {
+      return;
+    }
     
     if (existingEvent) {
       const updatedEvent = {
@@ -112,7 +144,7 @@ export function EventModal({
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
               <FiClock className="mr-1" />
-              利用時間
+              利用時間 <span className="text-xs text-gray-500 ml-1">(6:00〜24:00)</span>
             </label>
             <div className="flex items-center">
               <input
@@ -120,7 +152,9 @@ export function EventModal({
                 id="startTime"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                min="06:00"
+                max="24:00"
+                className={`w-full px-3 py-2 border ${timeError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                 required
               />
               <FiArrowRight className="mx-2 text-gray-500" />
@@ -129,10 +163,18 @@ export function EventModal({
                 id="endTime"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                min="06:00"
+                max="24:00"
+                className={`w-full px-3 py-2 border ${timeError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                 required
               />
             </div>
+            {timeError && (
+              <p className="mt-2 text-sm text-red-600 flex items-center">
+                <FiAlertCircle className="mr-1" />
+                {timeError}
+              </p>
+            )}
           </div>
           
           <div className="flex justify-end space-x-3">
@@ -143,7 +185,7 @@ export function EventModal({
             >
               キャンセル
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={!!timeError}>
               {existingEvent ? '更新' : '登録'}
             </Button>
           </div>

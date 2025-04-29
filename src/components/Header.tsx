@@ -10,7 +10,7 @@ export function Header() {
             <FiCamera className="text-xl text-pink-500" />
           </div>
           <h1 className="text-lg md:text-xl font-bold">
-            ハイパースペクトルカメラ 予約システム
+            HSカメラ 予約システム
           </h1>
         </div>
         <Link 

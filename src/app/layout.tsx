@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ハイパースペクトルカメラ予約システム",
+  title: "HSカメラ予約システム",
   description: "カメラの利用予約と利用記録を管理するシステム",
 };
 

@@ -123,7 +123,7 @@ export default function AdminPage() {
               <FiShield className="text-xl text-blue-600" />
             </div>
             <h1 className="text-lg md:text-xl font-bold">
-              ハイパースペクトルカメラ 管理者ページ
+              HSカメラ 管理者ページ
             </h1>
           </div>
           <Link 
