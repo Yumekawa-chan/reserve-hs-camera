@@ -12,9 +12,10 @@ interface EventDetailsProps {
   onEventDeleted?: (eventId: string) => void;
   onClose: () => void;
   onReportCompleted?: () => void;
+  readOnly?: boolean;
 }
 
-export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted }: EventDetailsProps) {
+export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted, readOnly = false }: EventDetailsProps) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -199,7 +200,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
               閉じる
             </Button>
             
-            {event.status === 'reserved' && (
+            {!readOnly && event.status === 'reserved' && (
               <Button 
                 variant="primary" 
                 onClick={startUsing}
@@ -212,7 +213,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
               </Button>
             )}
             
-            {event.status === 'in-use' && (
+            {!readOnly && event.status === 'in-use' && (
               <Button 
                 variant="success" 
                 onClick={handleReportComplete}
@@ -226,16 +227,18 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
         </>
       )}
       
-      <ReportModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        event={event}
-        onEventUpdated={(updatedEvent) => {
-          setIsReportModalOpen(false);
-          onEventUpdated?.(updatedEvent);
-        }}
-        onCompleted={onReportCompleted}
-      />
+      {!readOnly && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          event={event}
+          onEventUpdated={(updatedEvent) => {
+            setIsReportModalOpen(false);
+            onEventUpdated?.(updatedEvent);
+          }}
+          onCompleted={onReportCompleted}
+        />
+      )}
     </div>
   );
 } 

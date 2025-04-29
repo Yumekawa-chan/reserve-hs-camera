@@ -11,9 +11,10 @@ import { getTeamColor, updateTeamColorCache, resetTeamColorCache } from '@/lib/u
 
 interface CalendarProps {
   onReportCompleted?: () => void;
+  readOnly?: boolean;
 }
 
-export function Calendar({ onReportCompleted }: CalendarProps) {
+export function Calendar({ onReportCompleted, readOnly = false }: CalendarProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +60,8 @@ export function Calendar({ onReportCompleted }: CalendarProps) {
   }, []);
 
   const handleDateClick = (arg: { dateStr: string }) => {
+    if (readOnly) return;
+    
     setSelectedDate(arg.dateStr);
     setIsEventModalOpen(true);
   };
@@ -243,7 +246,7 @@ export function Calendar({ onReportCompleted }: CalendarProps) {
         }}
         height="100%"
         events={formatEventsForCalendar(events)}
-        dateClick={handleDateClick}
+        dateClick={readOnly ? undefined : handleDateClick}
         eventClick={handleEventClick}
         eventTimeFormat={{
           hour: 'numeric',
@@ -257,12 +260,14 @@ export function Calendar({ onReportCompleted }: CalendarProps) {
         moreLinkClick="day"
       />
 
-      <EventModal
-        isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
-        selectedDate={selectedDate}
-        onEventAdded={(newEvent) => handleEventChange(newEvent)}
-      />
+      {!readOnly && (
+        <EventModal
+          isOpen={isEventModalOpen}
+          onClose={() => setIsEventModalOpen(false)}
+          selectedDate={selectedDate}
+          onEventAdded={(newEvent) => handleEventChange(newEvent)}
+        />
+      )}
 
       {selectedEvent && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${!isDetailsOpen && 'hidden'}`}>
@@ -277,6 +282,7 @@ export function Calendar({ onReportCompleted }: CalendarProps) {
               }}
               onEventDeleted={handleEventDeleted}
               onReportCompleted={onReportCompleted}
+              readOnly={readOnly}
             />
           </div>
         </div>
