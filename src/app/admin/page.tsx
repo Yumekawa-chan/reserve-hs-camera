@@ -195,7 +195,7 @@ export default function AdminPage() {
                   管理者カレンダー
                 </h2>
                 <div className="flex-1 overflow-auto min-h-0">
-                  <Calendar key={`admin-calendar-${teamManagementLastClosed}`} onReportCompleted={handleReportCompleted} readOnly={true} />
+                  <Calendar key={`admin-calendar-${teamManagementLastClosed}`} onReportCompleted={handleReportCompleted} readOnly={true} isAdmin={true} />
                 </div>
               </div>
             </>

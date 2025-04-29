@@ -13,9 +13,10 @@ interface EventDetailsProps {
   onClose: () => void;
   onReportCompleted?: () => void;
   readOnly?: boolean;
+  isAdmin?: boolean;
 }
 
-export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted, readOnly = false }: EventDetailsProps) {
+export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted, readOnly = false, isAdmin = false }: EventDetailsProps) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -177,7 +178,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
           </div>
           
           <div className="flex justify-between space-x-3">
-            {event.status === 'reserved' && (
+            {(event.status === 'reserved' || (isAdmin && event.status === 'completed')) && (
               <Button 
                 variant="danger" 
                 onClick={() => setShowDeleteConfirm(true)}
@@ -185,7 +186,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
                 disabled={isDeleting}
               >
                 <FiTrash2 className="mr-1" />
-                予約削除
+                {event.status === 'completed' ? '記録を削除' : '予約削除'}
               </Button>
             )}
             

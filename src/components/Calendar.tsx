@@ -12,9 +12,10 @@ import { getTeamColor, updateTeamColorCache, resetTeamColorCache } from '@/lib/u
 interface CalendarProps {
   onReportCompleted?: () => void;
   readOnly?: boolean;
+  isAdmin?: boolean;
 }
 
-export function Calendar({ onReportCompleted, readOnly = false }: CalendarProps) {
+export function Calendar({ onReportCompleted, readOnly = false, isAdmin = false }: CalendarProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -283,6 +284,7 @@ export function Calendar({ onReportCompleted, readOnly = false }: CalendarProps)
               onEventDeleted={handleEventDeleted}
               onReportCompleted={onReportCompleted}
               readOnly={readOnly}
+              isAdmin={isAdmin}
             />
           </div>
         </div>
