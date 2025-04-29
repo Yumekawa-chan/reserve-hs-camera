@@ -164,14 +164,14 @@ export default function AdminPage() {
                 <Button 
                   onClick={handleExportCSV}
                   className="flex items-center"
-                  variant="primary"
+                  variant="blue"
                   disabled={isExporting}
                 >
                   <FiDownload className="mr-1" />
                   {isExporting ? 'エクスポート中...' : 'CSV出力'}
                 </Button>
                 <Button 
-                  variant="outline"
+                  variant="blue-outline"
                   onClick={() => setIsTeamManagementOpen(true)}
                   className="flex items-center"
                 >
@@ -242,6 +242,7 @@ export default function AdminPage() {
                   <Button
                     type="submit"
                     className="w-full flex items-center justify-center"
+                    variant="blue"
                     disabled={isSubmitting || !password}
                   >
                     {isSubmitting ? '認証中...' : '管理者として認証'}
