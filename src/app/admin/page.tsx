@@ -176,7 +176,7 @@ export default function AdminPage() {
                   className="flex items-center"
                 >
                   <FiSettings className="mr-1" />
-                  設定
+                班管理
                 </Button>
               </div>
               

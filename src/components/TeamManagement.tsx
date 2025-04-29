@@ -2,18 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { Team, TeamMember, addTeam, deleteTeam, generateId, getTeams, updateTeam } from '@/lib/firebaseData';
 import { Button } from './Button';
 import { updateTeamColorCache } from '@/lib/utils';
-import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings, FiLoader } from 'react-icons/fi';
+import { FiUser, FiUsers, FiUserPlus, FiUserX, FiEdit, FiTrash2, FiPlus, FiCheck, FiX, FiSettings, FiLoader, FiClipboard, FiPenTool, FiTag } from 'react-icons/fi';
 
 const COLOR_PALETTE = [
   { name: 'オレンジ', bg: '#F59E0B', border: '#D97706' },    
   { name: 'イエロー', bg: '#ECC94B', border: '#D69E2E' },
   { name: 'ピンク', bg: '#EC4899', border: '#DB2777' },
-
+  { name: 'レッド', bg: '#EF4444', border: '#DC2626' },
+  { name: 'ブラウン', bg: '#92400E', border: '#78350F' },
   { name: 'ライム', bg: '#84CC16', border: '#65A30D' },      
   { name: 'グリーン', bg: '#10B981', border: '#059669' },    
   { name: 'ティール', bg: '#0EA5E9', border: '#0284C7' },    
+  { name: 'シアン', bg: '#06B6D4', border: '#0891B2' },
   { name: 'ブルー', bg: '#4F46E5', border: '#4338CA' },      
   { name: 'パープル', bg: '#9F7AEA', border: '#805AD5' },    
+  { name: 'マゼンタ', bg: '#D946EF', border: '#C026D3' },
 ];
 
 interface TeamManagementProps {
@@ -271,7 +274,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
     return (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">班データを読み込み中...</p>
         </div>
       </div>
@@ -285,8 +288,8 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
           <h2 className="text-xl font-bold mb-4 text-red-600">エラーが発生しました</h2>
           <p className="text-gray-700 mb-4">{error}</p>
           <div className="flex justify-end space-x-3">
-            <Button onClick={() => fetchTeams()}>再試行</Button>
-            <Button variant="outline" onClick={onClose}>閉じる</Button>
+            <Button onClick={() => fetchTeams()} variant="blue">再試行</Button>
+            <Button variant="blue-outline" onClick={onClose}>閉じる</Button>
           </div>
         </div>
       </div>
@@ -302,29 +305,40 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
         ref={modalRef}
         className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-hidden flex flex-col shadow-xl"
       >
-        <h2 className="text-xl font-bold mb-4 flex items-center">
-          <FiUsers className="mr-2" />
+        <h2 className="text-xl font-bold mb-4 flex items-center text-blue-600">
+          <FiSettings className="mr-2" />
           班管理
         </h2>
         
         <div className="flex flex-1 overflow-hidden">
-          <div className="w-1/3 border-r pr-4 overflow-y-auto">
-            <div className="mb-4">
+          <div className="w-1/3 border-r border-blue-100 pr-4 flex flex-col overflow-hidden">
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100 flex-shrink-0">
+              <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
+                <FiPlus className="mr-1" />
+                新しい班を追加
+              </h3>
               <div className="flex flex-col space-y-2">
-                <input
-                  type="text"
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                  placeholder="新しい班名"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isSubmitting}
-                />
+                <div className="flex items-center">
+                  <FiTag className="text-blue-500 mr-2" />
+                  <input
+                    type="text"
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    placeholder="新しい班名を入力"
+                    className="w-full px-3 py-2 border border-blue-200 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    disabled={isSubmitting}
+                  />
+                </div>
                 
                 <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="text-xs text-blue-600 flex items-center mr-1">
+                    <FiPenTool className="mr-1" size={12} />
+                    班の色:
+                  </span>
                   {COLOR_PALETTE.map((color, index) => (
                     <button
                       key={index}
-                      className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`}
+                      className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
                       style={{ backgroundColor: color.bg }}
                       onClick={() => setSelectedColor(color)}
                       title={color.name}
@@ -336,6 +350,7 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                 <Button 
                   onClick={handleAddTeam} 
                   className="flex items-center justify-center mt-2"
+                  variant="blue"
                   disabled={isSubmitting || !newTeamName.trim()}
                 >
                   {isSubmitting ? (
@@ -346,122 +361,147 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                   ) : (
                     <>
                       <FiPlus className="mr-1" />
-                      新しい班を追加
+                      新しい班を作成
                     </>
                   )}
                 </Button>
               </div>
             </div>
             
-            <ul className="space-y-1">
-              {teams.map(team => (
-                <li 
-                  key={team.id}
-                  className={`px-3 py-2 rounded-md cursor-pointer flex justify-between items-center ${
-                    selectedTeam?.id === team.id ? 'bg-blue-100' : 'hover:bg-gray-100'
-                  }`}
-                  onClick={() => handleSelectTeam(team)}
-                >
-                  <span className="flex items-center">
-                    <span 
-                      className="w-4 h-4 rounded-full mr-2"
-                      style={{ backgroundColor: team.color?.bg || '#CBD5E1' }}
-                    />
-                    {team.name}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {team.members.length}名
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div className="flex flex-col overflow-hidden flex-1">
+              <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center flex-shrink-0">
+                <FiUsers className="mr-1" />
+                班一覧
+              </h3>
+              <div className="overflow-y-auto flex-1">
+                <ul className="space-y-1">
+                  {teams.map(team => (
+                    <li 
+                      key={team.id}
+                      className={`px-3 py-2 rounded-md cursor-pointer flex justify-between items-center transition-colors ${
+                        selectedTeam?.id === team.id ? 'bg-blue-100 border border-blue-200' : 'hover:bg-blue-50 border border-transparent'
+                      }`}
+                      onClick={() => handleSelectTeam(team)}
+                    >
+                      <span className="flex items-center">
+                        <span 
+                          className="w-4 h-4 rounded-full mr-2"
+                          style={{ backgroundColor: team.color?.bg || '#CBD5E1' }}
+                        />
+                        <span className={`${selectedTeam?.id === team.id ? 'font-medium text-blue-800' : 'text-gray-700'}`}>
+                          {team.name}
+                        </span>
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">
+                        {team.members.length}名
+                      </span>
+                    </li>
+                  ))}
+                  {teams.length === 0 && (
+                    <li className="px-3 py-2 text-center text-gray-500 text-sm">
+                      班が登録されていません
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
           </div>
           
           <div className="w-2/3 pl-4 flex flex-col overflow-hidden">
             {selectedTeam ? (
               <>
-                <div className="border-b pb-3 mb-3 flex justify-between items-center">
+                <div className="border-b border-blue-100 pb-3 mb-3 flex-shrink-0">
                   {editingTeam ? (
-                    <div className="flex flex-col space-y-2 w-full">
-                      <input
-                        type="text"
-                        value={newTeamName}
-                        onChange={(e) => setNewTeamName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        disabled={isSubmitting}
-                      />
-                      
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <div className="text-sm text-gray-500 flex items-center mr-2">
-                          <FiSettings className="mr-1" />
-                          班の色:
-                        </div>
-                        {COLOR_PALETTE.map((color, index) => (
-                          <button
-                            key={index}
-                            className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`}
-                            style={{ backgroundColor: color.bg }}
-                            onClick={() => setSelectedColor(color)}
-                            title={color.name}
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
+                        <FiEdit className="mr-1" />
+                        班の情報を編集
+                      </h3>
+                      <div className="flex flex-col space-y-3 w-full">
+                        <div className="flex items-center">
+                          <FiTag className="text-blue-500 mr-2" />
+                          <input
+                            type="text"
+                            value={newTeamName}
+                            onChange={(e) => setNewTeamName(e.target.value)}
+                            className="w-full px-3 py-2 border border-blue-200 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="班名を入力"
                             disabled={isSubmitting}
                           />
-                        ))}
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="success" 
-                          size="sm" 
-                          onClick={handleUpdateTeam}
-                          className="flex items-center"
-                          disabled={isSubmitting || !newTeamName.trim()}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <FiLoader className="mr-1 animate-spin" />
-                              処理中...
-                            </>
-                          ) : (
-                            <>
-                              <FiCheck className="mr-1" />
-                              保存
-                            </>
-                          )}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            setEditingTeam(false);
-                            setNewTeamName('');
-                          }}
-                          className="flex items-center"
-                          disabled={isSubmitting}
-                        >
-                          <FiX className="mr-1" />
-                          キャンセル
-                        </Button>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <div className="text-sm text-blue-600 flex items-center mr-2">
+                            <FiPenTool className="mr-1" />
+                            班の色:
+                          </div>
+                          {COLOR_PALETTE.map((color, index) => (
+                            <button
+                              key={index}
+                              className={`w-6 h-6 rounded-full ${color.bg === selectedColor.bg ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
+                              style={{ backgroundColor: color.bg }}
+                              onClick={() => setSelectedColor(color)}
+                              title={color.name}
+                              disabled={isSubmitting}
+                            />
+                          ))}
+                        </div>
+                        
+                        <div className="flex space-x-2 pt-2">
+                          <Button 
+                            variant="blue" 
+                            size="sm" 
+                            onClick={handleUpdateTeam}
+                            className="flex items-center"
+                            disabled={isSubmitting || !newTeamName.trim()}
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <FiLoader className="mr-1 animate-spin" />
+                                処理中...
+                              </>
+                            ) : (
+                              <>
+                                <FiCheck className="mr-1" />
+                                変更を保存
+                              </>
+                            )}
+                          </Button>
+                          <Button 
+                            variant="blue-outline" 
+                            size="sm" 
+                            onClick={() => {
+                              setEditingTeam(false);
+                              setNewTeamName('');
+                            }}
+                            className="flex items-center"
+                            disabled={isSubmitting}
+                          >
+                            <FiX className="mr-1" />
+                            キャンセル
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <>
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                       <h3 className="text-lg font-medium flex items-center">
                         <span 
                           className="w-5 h-5 rounded-full mr-2"
                           style={{ backgroundColor: selectedTeam.color?.bg || '#CBD5E1' }}
                         />
-                        {selectedTeam.name}
+                        <span className="text-blue-800">{selectedTeam.name}</span>
                       </h3>
                       <div className="flex space-x-2">
                         <Button 
                           size="sm" 
-                          variant="secondary"
+                          variant="blue"
                           onClick={handleEditTeam}
                           className="flex items-center"
                           disabled={isSubmitting}
                         >
                           <FiEdit className="mr-1" />
-                          編集
+                          班名・色を編集
                         </Button>
                         <Button 
                           size="sm" 
@@ -475,20 +515,25 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           ) : (
                             <>
                               <FiTrash2 className="mr-1" />
-                              削除
+                              班を削除
                             </>
                           )}
                         </Button>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
                 
-                <div className="mb-4 pr-2">
-                  <div className="grid grid-cols-1 gap-4">
+                <div className="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100 flex-shrink-0">
+                  <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
+                    <FiUserPlus className="mr-1" />
+                    新しいメンバーを追加
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        新しいメンバー（フルネームで入力してください）
+                      <label className="block text-sm font-medium text-blue-700 mb-1 flex items-center">
+                        <FiUser className="mr-1" size={14} />
+                        氏名（フルネーム）
                       </label>
                       <input
                         type="text"
@@ -498,17 +543,18 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           setNameError(null);
                         }}
                         placeholder="例：山田 太郎"
-                        className={`w-full px-3 py-2 border ${nameError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                        className={`w-full px-3 py-2 border ${nameError ? 'border-red-500' : 'border-blue-200'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                         disabled={isSubmitting}
                       />
                       {nameError && (
                         <p className="mt-1 text-xs text-red-500">{nameError}</p>
                       )}
-                      <p className="mt-1 text-xs text-gray-500">※氏名を正確に入力してください（例：鈴木 花子）</p>
+                      <p className="mt-1 text-xs text-blue-600">※姓と名の間にスペースを入れてください</p>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-blue-700 mb-1 flex items-center">
+                        <FiClipboard className="mr-1" size={14} />
                         学籍番号
                       </label>
                       <input
@@ -519,90 +565,97 @@ export function TeamManagement({ isOpen, onClose }: TeamManagementProps) {
                           setStudentIdError(null);
                         }}
                         placeholder="例：24AMJ21"
-                        className={`w-full px-3 py-2 border ${studentIdError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                        className={`w-full px-3 py-2 border ${studentIdError ? 'border-red-500' : 'border-blue-200'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                         disabled={isSubmitting}
                       />
                       {studentIdError && (
                         <p className="mt-1 text-xs text-red-500">{studentIdError}</p>
                       )}
                     </div>
-                    
-                    <div>
-                      <Button 
-                        onClick={handleAddMember} 
-                        className="w-full flex items-center justify-center"
-                        disabled={isSubmitting || !newMemberName.trim() || !newStudentId.trim()}
-                      >
-                        {isSubmitting ? (
-                          <FiLoader className="animate-spin" />
-                        ) : (
-                          <>
-                            <FiUserPlus className="mr-2" />
-                            メンバーを追加
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <Button 
+                      onClick={handleAddMember}
+                      variant="blue"
+                      className="w-full flex items-center justify-center"
+                      disabled={isSubmitting || !newMemberName.trim() || !newStudentId.trim()}
+                    >
+                      {isSubmitting ? (
+                        <FiLoader className="animate-spin" />
+                      ) : (
+                        <>
+                          <FiUserPlus className="mr-2" />
+                          メンバーを追加
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
                 
-                <div className="overflow-y-auto flex-1">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <FiUsers className="mr-2" />
-                    メンバー一覧
-                  </h4>
-                  {selectedTeam.members.length === 0 ? (
-                    <p className="text-gray-500 text-sm">メンバーがいません</p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {selectedTeam.members.map(member => (
-                        <li 
-                          key={member.id}
-                          className="px-3 py-2 rounded-md flex justify-between items-center hover:bg-gray-100"
-                        >
-                          <span className="flex items-center">
-                            <FiUser className="mr-2 text-gray-500" />
-                            <span className="flex flex-col">
-                              <span>{member.name}</span>
-                              <span className="text-xs text-gray-500">学籍番号: {member.studentId}</span>
-                            </span>
-                          </span>
-                          <Button 
-                            size="sm" 
-                            variant="danger"
-                            onClick={() => handleDeleteMember(member.id)}
-                            className="flex items-center"
-                            disabled={isSubmitting}
+                <div className="flex-1 bg-white rounded-lg border border-blue-100 flex flex-col overflow-hidden">
+                  <div className="p-3 border-b border-blue-100 bg-blue-50 flex-shrink-0">
+                    <h4 className="font-medium flex items-center text-blue-700">
+                      <FiUsers className="mr-2" />
+                      メンバー一覧（{selectedTeam.members.length}名）
+                    </h4>
+                  </div>
+                  <div className="p-2 overflow-y-auto flex-1">
+                    {selectedTeam.members.length === 0 ? (
+                      <p className="text-gray-500 text-sm text-center py-4">メンバーが登録されていません</p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {selectedTeam.members.map(member => (
+                          <li 
+                            key={member.id}
+                            className="px-3 py-2 rounded-md flex justify-between items-center hover:bg-blue-50 border border-transparent hover:border-blue-100"
                           >
-                            {isSubmitting ? (
-                              <FiLoader className="animate-spin" />
-                            ) : (
-                              <FiUserX />
-                            )}
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                            <span className="flex items-center">
+                              <FiUser className="mr-2 text-blue-500" />
+                              <span className="flex flex-col">
+                                <span className="font-medium">{member.name}</span>
+                                <span className="text-xs text-gray-500">学籍番号: {member.studentId}</span>
+                              </span>
+                            </span>
+                            <Button 
+                              size="sm" 
+                              variant="danger"
+                              onClick={() => handleDeleteMember(member.id)}
+                              className="flex items-center"
+                              disabled={isSubmitting}
+                              title="メンバーを削除"
+                            >
+                              {isSubmitting ? (
+                                <FiLoader className="animate-spin" />
+                              ) : (
+                                <FiUserX />
+                              )}
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <FiUsers size={48} className="mb-4" />
-                <p>左側のリストから班を選択してください</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 bg-blue-50 rounded-lg p-8">
+                <FiUsers size={48} className="mb-4 text-blue-400" />
+                <p className="text-blue-600 font-medium">左側のリストから班を選択するか、新しい班を作成してください</p>
               </div>
             )}
           </div>
         </div>
         
-        <div className="flex justify-end mt-4 pt-4 border-t">
+        <div className="flex justify-end mt-4 pt-4 border-t border-blue-100">
           <Button 
             onClick={onClose}
             className="flex items-center"
+            variant="blue"
             disabled={isSubmitting}
           >
             <FiCheck className="mr-1" />
-            完了
+            設定を完了
           </Button>
         </div>
       </div>
