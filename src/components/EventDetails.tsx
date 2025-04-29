@@ -12,9 +12,11 @@ interface EventDetailsProps {
   onEventDeleted?: (eventId: string) => void;
   onClose: () => void;
   onReportCompleted?: () => void;
+  readOnly?: boolean;
+  isAdmin?: boolean;
 }
 
-export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted }: EventDetailsProps) {
+export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, onReportCompleted, readOnly = false, isAdmin = false }: EventDetailsProps) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -176,7 +178,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
           </div>
           
           <div className="flex justify-between space-x-3">
-            {event.status === 'reserved' && (
+            {(event.status === 'reserved' || (isAdmin && event.status === 'completed')) && (
               <Button 
                 variant="danger" 
                 onClick={() => setShowDeleteConfirm(true)}
@@ -184,7 +186,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
                 disabled={isDeleting}
               >
                 <FiTrash2 className="mr-1" />
-                予約削除
+                {event.status === 'completed' ? '記録を削除' : '予約削除'}
               </Button>
             )}
             
@@ -199,7 +201,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
               閉じる
             </Button>
             
-            {event.status === 'reserved' && (
+            {!readOnly && event.status === 'reserved' && (
               <Button 
                 variant="primary" 
                 onClick={startUsing}
@@ -212,7 +214,7 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
               </Button>
             )}
             
-            {event.status === 'in-use' && (
+            {!readOnly && event.status === 'in-use' && (
               <Button 
                 variant="success" 
                 onClick={handleReportComplete}
@@ -226,16 +228,18 @@ export function EventDetails({ event, onEventUpdated, onEventDeleted, onClose, o
         </>
       )}
       
-      <ReportModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        event={event}
-        onEventUpdated={(updatedEvent) => {
-          setIsReportModalOpen(false);
-          onEventUpdated?.(updatedEvent);
-        }}
-        onCompleted={onReportCompleted}
-      />
+      {!readOnly && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          event={event}
+          onEventUpdated={(updatedEvent) => {
+            setIsReportModalOpen(false);
+            onEventUpdated?.(updatedEvent);
+          }}
+          onCompleted={onReportCompleted}
+        />
+      )}
     </div>
   );
 } 
