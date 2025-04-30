@@ -6,11 +6,14 @@ import { Header } from '@/components/Header';
 import { PasswordEntry } from '@/components/PasswordEntry';
 import { FiCalendar } from 'react-icons/fi';
 import Confetti from 'react-confetti';
+import { getEvents, Event } from '@/lib/firebaseData';
+import { OverdueEventNotifications } from '@/components/OverdueEventNotifications';
 
 export default function Home() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [overdueEvents, setOverdueEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -42,6 +45,38 @@ export default function Home() {
     return () => window.removeEventListener('resize', updateWindowSize);
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const checkOverdueEvents = async () => {
+      try {
+        const events = await getEvents();
+        const now = new Date();
+        
+        const overdue = events.filter(event => {
+          if (event.status === 'completed') return false;
+          
+          const [hours, minutes] = (event.time || '').split(':').map(Number);
+          if (isNaN(hours) || isNaN(minutes)) return false;
+          
+          const eventDate = new Date(event.date);
+          eventDate.setHours(hours, minutes, 0, 0);
+          
+          return eventDate < now;
+        });
+        
+        setOverdueEvents(overdue);
+      } catch (error) {
+        console.error('期限切れイベントの確認エラー:', error);
+      }
+    };
+
+    checkOverdueEvents();
+    const intervalId = setInterval(checkOverdueEvents, 60000 * 10); 
+    
+    return () => clearInterval(intervalId);
+  }, [isAuthenticated]);
+
   const handleReportCompleted = () => {
     setShowConfetti(true);
     setTimeout(() => {
@@ -51,6 +86,10 @@ export default function Home() {
   
   const handleAuthenticated = () => {
     setIsAuthenticated(true);
+  };
+
+  const dismissOverdueEvent = (eventId: string) => {
+    setOverdueEvents(current => current.filter(event => event.id !== eventId));
   };
 
   return (
@@ -79,7 +118,12 @@ export default function Home() {
       <main className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto w-full flex flex-col overflow-hidden flex-1">
           {isAuthenticated ? (
-            <>              
+            <>
+              <OverdueEventNotifications 
+                events={overdueEvents} 
+                onDismiss={dismissOverdueEvent} 
+              />
+              
               <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border-2 border-pink-100 flex-1 overflow-hidden flex flex-col">
                 <h2 className="text-xl font-bold text-pink-600 mb-3 flex items-center flex-shrink-0">
                   <span className="bg-pink-100 rounded-full w-8 h-8 flex items-center justify-center mr-2">
