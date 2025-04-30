@@ -25,6 +25,7 @@ export interface Event {
   target?: string;
   shots?: number;
   notes?: string;
+  tempMembers?: string | null;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }

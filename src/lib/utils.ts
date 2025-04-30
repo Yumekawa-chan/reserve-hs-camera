@@ -142,8 +142,19 @@ export const exportToCsv = async (events: Event[]) => {
   for (const event of completedEvents) {
     const studentIds = await getTeamMembersStudentIds(event.team, event.participants || '');
     
+    let allStudentIds = [...studentIds];
+    if (event.tempMembers) {
+      try {
+        const tempMembers = JSON.parse(event.tempMembers);
+        const tempMemberIds = tempMembers.map((member: { studentId: string }) => member.studentId);
+        allStudentIds = [...studentIds, ...tempMemberIds];
+      } catch (error) {
+        console.error('臨時メンバーデータの解析エラー:', error);
+      }
+    }
+    
     const participants = (event.participants || '').replace(/、/g, ';');
-    const studentIdsStr = studentIds.join(';');
+    const studentIdsStr = allStudentIds.join(';');
     
     rows.push([
       formatDate(event.date),
