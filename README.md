@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HS カメラ 予約システム
 
-## Getting Started
+## 概要
 
-First, run the development server:
+本システムは、研究室で共有されているハイパースペクトルカメラ（HS カメラ）の予約管理を行うための Web アプリケーションです。複数の班が 1 台のカメラを利用するため、使用状況を管理・保存できる仕組みを提供します。管理者は各班の予約・使用状況を確認することが可能です．
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 使用技術
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Next.js
+- Firebase
+- Tailwind CSS
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## デプロイ先
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Vercel
 
-## Learn More
+## 使用方法
 
-To learn more about Next.js, take a look at the following resources:
+パスワードは事前に共有されたものを入力してください．
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 一般ユーザー
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+あああ
 
-## Deploy on Vercel
+### 管理ユーザー
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+あああ
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 今後の TODO
+
+本システムは，開発効率を重視して Cursor などのツールを活用し、短期間で構築しました。そのため、現時点ではコードの可読性や構造に一部改善の余地があります。今後、長期的な運用を見据えて、段階的にリファクタリングを進めていく予定です。
