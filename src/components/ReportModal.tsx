@@ -338,7 +338,7 @@ export function ReportModal({
               type="submit"
               variant="success"
               className="flex items-center"
-              disabled={participants.length === 0}
+              disabled={participants.length === 0 || !!tempName.trim() || !!tempStudentId.trim()}
             >
               <FiCheckCircle className="mr-1" />
               完了
